@@ -14,7 +14,8 @@ disable+ =
     bad-option-value,
     missing-function-docstring,
     missing-class-docstring,
-    import-outside-toplevel
+    import-outside-toplevel,
+    django-not-configured
 
 [BASIC]
 attr-rgx = [a-z_][a-z0-9_]{2,40}$
