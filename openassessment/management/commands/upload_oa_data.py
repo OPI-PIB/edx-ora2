@@ -96,6 +96,7 @@ class Command(BaseCommand):
         Returns:
             None
         """
+        # pylint: disable=consider-using-with
         output_streams = {
             name: open(os.path.join(csv_dir, rel_path), 'w')
             for name, rel_path in self.OUTPUT_CSV_PATHS.items()

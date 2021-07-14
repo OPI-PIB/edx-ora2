@@ -263,7 +263,7 @@ class XBlockHandlerTestCaseMixin:
             "submission_uuid": assessment["submission_uuid"],
             "parts": parts_list
         }
-
+        # pylint: disable=consider-using-dict-items
         for key in kwargs:
             event_data[key] = kwargs[key]
 
