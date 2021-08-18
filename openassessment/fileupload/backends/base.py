@@ -30,7 +30,8 @@ class Settings:
         'image/png': '.png',
         'application/pdf': '.pdf',
         'application/msword': '.doc',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx'
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+        'application/zip': '.zip'
     }
 
     @classmethod
