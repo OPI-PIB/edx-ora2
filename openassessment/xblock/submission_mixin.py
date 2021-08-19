@@ -23,6 +23,7 @@ from .data_conversion import (
 from .resolve_dates import DISTANT_FUTURE
 from .user_data import get_user_preferences
 from .validation import validate_submission
+from webob import Response
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -446,8 +447,8 @@ class SubmissionMixin:
         file_num = int(data.get('filenum', 0))
         try:
             key = self._get_student_item_key(file_num)
-            url = file_upload_api.get_upload_url(key, content_type, file, file_name)
-            return {'success': True, 'url': url}
+            url = file_upload_api.get_upload_url(key, content_type, file)
+            return Response(json.dumps({'success': True, 'url': url}), content_type='application/json')
         except FileUploadError:
             logger.exception("FileUploadError:Error retrieving upload URL for the data:{data}.".format(data=data))
             return {'success': False, 'msg': self._("Error retrieving upload URL.")}
