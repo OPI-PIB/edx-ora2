@@ -19,16 +19,16 @@ log = logging.getLogger(
 class Backend(BaseBackend):
     """ S3 Bucked File Upload Backend. """
 
-    def get_upload_url(self, key, content_type):
+    def get_upload_url(self, key, content_type, file, file_name):
         bucket_name, key_name = self._retrieve_parameters(key)
         try:
             conn = _connect_to_s3()
             return conn.generate_presigned_url(
-                "put_object",
+                "upload_file",
                 Params={
                     "Bucket": bucket_name,
                     "Key": key_name,
-                    "ContentType": content_type,
+                    "Filename": file,
                 },
                 ExpiresIn=self.UPLOAD_URL_TIMEOUT,
             )
