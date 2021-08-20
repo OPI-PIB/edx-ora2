@@ -2,7 +2,7 @@
 
 
 import logging
-
+import os
 from django.conf import settings
 
 import botocore
@@ -23,15 +23,17 @@ class Backend(BaseBackend):
         bucket_name, key_name = self._retrieve_parameters(key)
         try:
             conn = _connect_to_s3()
-            return conn.generate_presigned_url(
-                "upload_file",
-                Params={
-                    "Bucket": bucket_name,
-                    "Key": key_name,
-                    "Filename": file,
-                },
-                ExpiresIn=self.UPLOAD_URL_TIMEOUT,
-            )
+            try:
+                size = os.fstat(file.fileno()).st_size
+            except:
+                file.seek(0, os.SEEK_END)
+                size = file.tell()
+            try:
+                response = conn.upload_file(file, bucket_name, key_name)
+            except ClientError as e:
+                logging.error(e)
+                return False
+            return True
         except Exception as ex:
             log.exception(
                 u"An internal exception occurred while generating an upload URL."
