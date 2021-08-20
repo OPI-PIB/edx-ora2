@@ -7,7 +7,7 @@ from django.conf import settings
 
 import botocore
 import boto3
-
+from botocore.exceptions import ClientError
 from ..exceptions import FileUploadInternalError
 from .base import BaseBackend
 
