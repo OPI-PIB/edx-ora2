@@ -516,21 +516,21 @@ export class Server {
    * upon failure.
    */
   getUploadUrl(contentType, filename, filenum, file) {
-    var formData = new FormData();
-    var objArr = [];
+    const formData = new FormData();
+    const objArr = [];
     const url = this.url('upload_url');
 
-    objArr.push(JSON.stringify({contentType: contentType, filename: filename, filenum: filenum}));
+    objArr.push(JSON.stringify({ contentType, filename, filenum }));
     formData.append('file', file);
     formData.append('objArr', objArr);
 
     return $.Deferred((defer) => {
       $.ajax({
         type: 'POST',
-        url: url,
+        url,
         data: formData,
         contentType: false,
-        processData:false
+        processData: false,
       }).done(function (data) {
         if (data.success) { defer.resolve(data.url); } else { defer.rejectWith(this, [data.msg]); }
       }).fail(function () {

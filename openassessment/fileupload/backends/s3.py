@@ -19,7 +19,7 @@ log = logging.getLogger(
 class Backend(BaseBackend):
     """ S3 Bucked File Upload Backend. """
 
-    def get_upload_url(self, key, content_type, file, file_name):
+    def get_upload_url(self, key, content_type, file):
         bucket_name, key_name = self._retrieve_parameters(key)
         try:
             conn = _connect_to_s3()

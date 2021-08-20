@@ -898,13 +898,13 @@ export class ResponseView {
      // PUT requests on the server.
      return view.server.getUploadUrl(filetype, filename, filenum, file).done(
        () => {
-          view.fileUrl(filenum);
-          view.baseView.toggleActionError('upload', null);
-          if (finalUpload) {
-            sel.find('input[type=file]').val('');
-            view.filesUploaded = true;
-            view.checkSubmissionAbility(true);
-          }
+         view.fileUrl(filenum);
+         view.baseView.toggleActionError('upload', null);
+         if (finalUpload) {
+           sel.find('input[type=file]').val('');
+           view.filesUploaded = true;
+           view.checkSubmissionAbility(true);
+         }
        },
      ).fail(handleError);
    }
