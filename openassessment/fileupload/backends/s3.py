@@ -2,7 +2,6 @@
 
 
 import logging
-import os
 from django.conf import settings
 
 import botocore
@@ -23,11 +22,6 @@ class Backend(BaseBackend):
         bucket_name, key_name = self._retrieve_parameters(key)
         try:
             conn = _connect_to_s3()
-            try:
-                size = os.fstat(file.fileno()).st_size
-            except:
-                file.seek(0, os.SEEK_END)
-                size = file.tell()
             try:
                 response = conn.upload_fileobj(file, bucket_name, key_name)
             except ClientError as e:
