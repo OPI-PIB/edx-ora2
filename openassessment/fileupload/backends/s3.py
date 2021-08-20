@@ -29,7 +29,7 @@ class Backend(BaseBackend):
                 file.seek(0, os.SEEK_END)
                 size = file.tell()
             try:
-                response = conn.upload_file(file, bucket_name, key_name)
+                response = conn.upload_file(file.path, bucket_name, key_name)
             except ClientError as e:
                 logging.error(e)
                 return False
