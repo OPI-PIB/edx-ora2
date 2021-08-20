@@ -23,7 +23,7 @@ class Backend(BaseBackend):
         try:
             conn = _connect_to_s3()
             try:
-                response = conn.upload_fileobj(file, bucket_name, key_name)
+                response = conn.upload_fileobj(file, bucket_name, key_name, ExtraArgs={'ContentType': content_type})
             except ClientError as e:
                 logging.error(e)
                 return False
