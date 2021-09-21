@@ -2,28 +2,21 @@
 # edX translation file
 # Copyright (C) 2018 edX
 # This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
+# EdX Team <info@edx.org>, 2018.
 # 
 # Translators:
-# Adam Banasiak <adam@cku.elblag.pl>, 2015
-# be8238a6a200ce133e6c46360471eb91_d2fb582 <ff48a1e86ce9f4cd3956f7438592f7c5_237459>, 2015
-# b61fdc3e1f331bd2956c2eda5ac823bb_5e9fe1f <109567e850409e435ac483a0dbce1d1f_259547>, 2015
-# Andrzej Batorski <bator54@gmail.com>, 2014
-# dwegiel <dwegiel@gmail.com>, 2015
-# Maciej Kolankowski <maciej@eduprojekt.org>, 2017
-# Jakub Kopczyk <kuba5566@gmail.com>, 2014-2015
-# Martyna Bogusz <piotr.boguszewicz@bluesoft.com>, 2020
-# Mateusz <blue90pl@gmail.com>, 2014
-# MONIKA STEFAŃCZYK <monika_stefanczyk@wp.pl>, 2016
-# Paweł Marchewka <mamior@o2.pl>, 2014
-# Sebastian <foobarbaz@gazeta.pl>, 2014
+# Maciej Kolankowski <maciej.kolankowski@opi.org.pl>, 2021
+# Emilia Dolega <emilia.dolega@opi.org.pl>, 2021
+# krystianlygas <krystian.lygas@gmail.com>, 2021
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: edx-platform\n"
+"Project-Id-Version: edx-ora2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-27 11:56-0400\n"
-"PO-Revision-Date: 2020-10-27 18:17+0000\n"
-"Last-Translator: Transifex Bot <>\n"
-"Language-Team: Polish (http://www.transifex.com/open-edx/edx-platform/language/pl/)\n"
+"POT-Creation-Date: 2021-09-21 07:18-0400\n"
+"PO-Revision-Date: 2021-08-09 12:51+0000\n"
+"Last-Translator: krystianlygas <krystian.lygas@gmail.com>, 2021\n"
+"Language-Team: Polish (https://www.transifex.com/navoica/teams/104253/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -38,7 +31,10 @@ msgstr "Nie udało się sparsować seryjnego szablonu"
 msgid ""
 "If your assignment includes a learner training step, the rubric must have at"
 " least one criterion, and that criterion must have at least one option."
-msgstr "Jeśli twoje zadanie obejmuje etap szkoleniowy studenta, szablon musi zawierać przynajmniej jedno kryterium, a owo kryterium musi posiadać co najmniej jedną opcję."
+msgstr ""
+"Jeśli twoje zadanie obejmuje etap szkoleniowy studenta, szablon musi "
+"zawierać przynajmniej jedno kryterium, a owo kryterium musi posiadać co "
+"najmniej jedną opcję."
 
 #: openassessment/assessment/api/student_training.py:202
 #, python-brace-format
@@ -50,12 +46,16 @@ msgstr "Przykład {example_number} zawiera błąd walidacji: {error}"
 msgid ""
 "Example {example_number} has an invalid option for \"{criterion_name}\": "
 "\"{option_name}\""
-msgstr "Przykład {example_number} zawiera nieprawidłową opcję dla \"{criterion_name}\": \"{option_name}\""
+msgstr ""
+"Przykład {example_number} zawiera nieprawidłową opcję dla "
+"\"{criterion_name}\": \"{option_name}\""
 
 #: openassessment/assessment/api/student_training.py:226
 #, python-brace-format
 msgid "Example {example_number} has an extra option for \"{criterion_name}\""
-msgstr "Przykład {example_number} zawiera ponadnormatywną opcję dla \"{criterion_name}\""
+msgstr ""
+"Przykład {example_number} zawiera ponadnormatywną opcję dla "
+"\"{criterion_name}\""
 
 #: openassessment/assessment/api/student_training.py:239
 #, python-brace-format
@@ -77,6 +77,10 @@ msgid ""
 " can be enabled, disable, and ordered for a flexible set of pedagogical "
 "needs."
 msgstr ""
+"Zadanie z otwartą odpowiedzią pozwala na konfigurację jednego lub wielu "
+"etapów opartej na sekwencji ocen otwartej odpowiedzi. Poniższe etapy mogą "
+"być włączane, wyłączane oraz uporządkowane według elastycznego zestawu "
+"potrzeb pedagogicznych."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_basic_settings_list.html:5
 msgid "Display Name "
@@ -94,7 +98,9 @@ msgstr "Odpowiedź tekstowa"
 msgid ""
 "Specify whether learners must include a text based response to this "
 "problem's prompt."
-msgstr "Określ, czy studenci mają załączyć odpowiedź tekstową na pytanie zawarte w tym ćwiczeniu."
+msgstr ""
+"Określ, czy studenci mają załączyć odpowiedź tekstową na pytanie zawarte w "
+"tym ćwiczeniu."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_basic_settings_list.html:25
 msgid "File Uploads Response"
@@ -104,7 +110,9 @@ msgstr "Odpowiedź w formie pliku"
 msgid ""
 "Specify whether learners are able to upload files as a part of their "
 "response."
-msgstr "Określ, czy studenci mają możliwość przesyłania plików w ramach elementu swojej odpowiedzi."
+msgstr ""
+"Określ, czy studenci mają możliwość przesyłania plików w ramach elementu "
+"swojej odpowiedzi."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_basic_settings_list.html:37
 msgid "Allow Multiple Files"
@@ -158,7 +166,9 @@ msgstr "Typy plików"
 msgid ""
 "Enter the file extensions, separated by commas, that you want learners to be"
 " able to upload. For example: pdf,doc,docx."
-msgstr "Wprowadź oddzielone przecinkami rozszerzenia plików, na przesyłanie których chcesz pozwolić studentom. Przykład: pdf,doc,docx."
+msgstr ""
+"Wprowadź oddzielone przecinkami rozszerzenia plików, na przesyłanie których "
+"chcesz pozwolić studentom. Przykład: pdf,doc,docx."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_basic_settings_list.html:71
 msgid ""
@@ -189,7 +199,10 @@ msgid ""
 "Specify the number of top scoring responses to display. Valid numbers are 0 "
 "to 99. If the number is 0, the Top Responses section does not appear to "
 "learners."
-msgstr "Określa liczbę wyświetlanych najlepszych odpowiedzi w zakresie od 0 do 99. Jeśli liczba wynosi 0, najlepsze odpowiedzi nie zostają wyświetlone studentom."
+msgstr ""
+"Określa liczbę wyświetlanych najlepszych odpowiedzi w zakresie od 0 do 99. "
+"Jeśli liczba wynosi 0, najlepsze odpowiedzi nie zostają wyświetlone "
+"studentom."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_basic_settings_list.html:109
 msgid "When Teams Enabled is set to true, Top Responses will be disabled."
@@ -261,7 +274,9 @@ msgstr "Wymagany"
 msgid ""
 "Select one of the options above. This describes whether or not the learner "
 "will have to provide criterion feedback."
-msgstr "Wybierz jedną z powyższych opcji. Pozwala to określić, czy studenci będą musieli załączać opinię do kryterium."
+msgstr ""
+"Wybierz jedną z powyższych opcji. Pozwala to określić, czy studenci będą "
+"musieli załączać opinię do kryterium."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_header_and_validation.html:3
 msgid "Open Response Assessment"
@@ -278,11 +293,11 @@ msgstr "Szablon"
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_header_and_validation.html:7
 msgid "Schedule"
-msgstr ""
+msgstr "Terminarz"
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_header_and_validation.html:8
 msgid "Assessment steps"
-msgstr ""
+msgstr "Etapy oceny"
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_header_and_validation.html:9
 msgid "Settings"
@@ -297,7 +312,11 @@ msgid ""
 "A change that you made to this assessment's rubric has an impact on some "
 "examples laid out in the settings tab. For more information, go to the "
 "Settings section and fix the areas highlighted in red."
-msgstr "Zmiana, której dokonasz w szablonie tego zadania, będzie mieć wpływ na niektóre przykłady znajdujące się w zakładce ustawień. W celu uzyskania dodatkowych informacji udaj się do sekcji ustawień i popraw elementy zaznaczone kolorem czerwonym."
+msgstr ""
+"Zmiana, której dokonasz w szablonie tego zadania, będzie mieć wpływ na "
+"niektóre przykłady znajdujące się w zakładce ustawień. W celu uzyskania "
+"dodatkowych informacji udaj się do sekcji ustawień i popraw elementy "
+"zaznaczone kolorem czerwonym."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_header_and_validation.html:21
 msgid "close alert"
@@ -329,6 +348,10 @@ msgid ""
 "also receive feedback from others in their final grade. Often, though not "
 "always, this step is preceded by Self Assessment or Learner Training steps."
 msgstr ""
+"Ćwiczenie wzajemnej oceny (ORA) umożliwia studentom przekazywanie informacji"
+" zwrotnych innym studentom, a także otrzymywanie informacji zwrotnych od "
+"innych w ich ocenie końcowej. Często, choć nie zawsze, krok ten jest "
+"poprzedzony etapami samooceny lub szkoleniem studenta."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_peer_assessment.html:17
 msgid ""
@@ -336,10 +359,13 @@ msgid ""
 " peer reviews a student will be assessed with, and the number of peer a "
 "student must grade. Additional options can be specified."
 msgstr ""
+"Konfiguracja: Aby skonfigurować ten krok, musisz określić liczbę wzajemnych "
+"ocen, którymi student zostanie oceniony oraz liczbę prac, które każdy "
+"student musi ocenić. Można ustawić dodatkowe opcje."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_peer_assessment.html:22
 msgid "View Options & Configuration"
-msgstr ""
+msgstr "Wyświetl opcje i konfigurację"
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_peer_assessment.html:28
 msgid "Must Grade"
@@ -349,7 +375,9 @@ msgstr "Liczba prac do ocenienia"
 msgid ""
 "Specify the number of peer assessments that each learner must complete. "
 "Valid numbers are 0 to 99."
-msgstr "Określ liczbę prac, które musi ocenić każdy student. Podaj wartość od 0 do 99."
+msgstr ""
+"Określ liczbę prac, które musi ocenić każdy student. Podaj wartość od 0 do "
+"99."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_peer_assessment.html:35
 msgid "Graded By"
@@ -359,11 +387,13 @@ msgstr "Liczba oceniających"
 msgid ""
 "Specify the number of learners that each response must be assessed by. Valid"
 " numbers are 0 to 99."
-msgstr "Określ ilu studentów musi ocenić poszczególną pracę. Podaj wartość od 0 do 99."
+msgstr ""
+"Określ ilu studentów musi ocenić poszczególną pracę. Podaj wartość od 0 do "
+"99."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_peer_assessment_schedule.html:5
 msgid "Peer Assessment Deadlines"
-msgstr ""
+msgstr "Terminy wzajemnej oceny"
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_peer_assessment_schedule.html:10
 #: openassessment/templates/openassessmentblock/edit/oa_edit_self_assessment_schedule.html:10
@@ -402,7 +432,10 @@ msgstr "Nie możesz usunąć pytania po tym gdy zadanie zostało opublikowane."
 msgid ""
 "Prompts. Replace the sample text with your own text. For more information, "
 "see the ORA documentation."
-msgstr "Pytania. Zastąp przykładowy tekst swoim własnym. W celu uzyskania szczegółowych informacji zapoznaj się z dokumentacją zadań z otwartą odpowiedzią."
+msgstr ""
+"Pytania. Zastąp przykładowy tekst swoim własnym. W celu uzyskania "
+"szczegółowych informacji zapoznaj się z dokumentacją zadań z otwartą "
+"odpowiedzią."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_prompts.html:22
 msgid "Add Prompt"
@@ -414,7 +447,12 @@ msgid ""
 "Each option has a point value. This template contains two sample criteria "
 "and their options. Replace the sample text with your own text. For more "
 "information, see the ORA documentation."
-msgstr "Szablony składają się z kryteriów, które z kolei zawierają jedną lub więcej opcji. Każda opcja posiada punkt wartości. Ten szablon zawiera dwa przykładowe kryteria i ich opcje. Zastąp przykładowy tekst swoim własnym. W celu uzyskania szczegółowych informacji zapoznaj się z dokumentacją zadań z otwartą odpowiedzią."
+msgstr ""
+"Szablony składają się z kryteriów, które z kolei zawierają jedną lub więcej "
+"opcji. Każda opcja posiada punkt wartości. Ten szablon zawiera dwa "
+"przykładowe kryteria i ich opcje. Zastąp przykładowy tekst swoim własnym. W "
+"celu uzyskania szczegółowych informacji zapoznaj się z dokumentacją zadań z "
+"otwartą odpowiedzią."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_rubric.html:26
 msgid "Add Criterion"
@@ -432,7 +470,9 @@ msgstr "Instrukcje do opinii"
 msgid ""
 "Encourage learners to provide feedback on the response they have graded. You"
 " can replace the sample text with your own."
-msgstr "Zachęć studentów do załączania opinii do ocenianych odpowiedzi. Możesz zastąpić przykładowy tekst swoim własnym."
+msgstr ""
+"Zachęć studentów do załączania opinii do ocenianych odpowiedzi. Możesz "
+"zastąpić przykładowy tekst swoim własnym."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_rubric.html:46
 msgid "Default Feedback Text"
@@ -442,7 +482,10 @@ msgstr "Domyślny tekst opinii"
 msgid ""
 "Enter feedback text that learners will see before they enter their own "
 "feedback. Use this text to show learners a good example peer assessment."
-msgstr "Wprowadź tekst opinii, który zobaczą studenci przed napisaniem swojej własnej opinii. Użyj tego pola, aby pokazać studentom przykład dobrej opinii w zadaniu z wzajemną oceną."
+msgstr ""
+"Wprowadź tekst opinii, który zobaczą studenci przed napisaniem swojej "
+"własnej opinii. Użyj tego pola, aby pokazać studentom przykład dobrej opinii"
+" w zadaniu z wzajemną oceną."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_schedule.html:5
 msgid "Course Deadlines"
@@ -470,7 +513,8 @@ msgstr "Godzina zakończenia przyjmowania odpowiedzi"
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_schedule.html:65
 msgid "The date and time when learners can no longer submit responses."
-msgstr "Data i czas, kiedy przyjmowanie odpowiedzi studentów zostanie zakończone."
+msgstr ""
+"Data i czas, kiedy przyjmowanie odpowiedzi studentów zostanie zakończone."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_self_assessment.html:8
 msgid "Step: Self Assessment"
@@ -481,10 +525,12 @@ msgid ""
 "Self Assessment asks learners to grade their own submissions against the "
 "rubric."
 msgstr ""
+"Samodzielna ocena polega na tym, że uczniowie oceniają swoje własne "
+"zgłoszenia według szablonu."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_self_assessment_schedule.html:5
 msgid "Self Assessment Deadlines"
-msgstr ""
+msgstr "Terminy samodzielnej oceny"
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_self_assessment_schedule.html:27
 msgid "The date and time when learners can begin assessing their responses."
@@ -503,6 +549,8 @@ msgid ""
 "Staff Assessment gates sets the final grade for students if enabled with "
 "other steps, though it can also be used as a standalone step."
 msgstr ""
+"Ocena kadry decyduje o ocenie końcowej studentów, jeśli inne etapy zostały "
+"włączone, choć może też zostać użyta jako samodzielny etap."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_student_training.html:9
 msgid "Step: Learner Training"
@@ -514,6 +562,10 @@ msgid ""
 "submission in order to train them on the rubric and ensure learner's "
 "understand the rubric for either Self or Peer Assessment steps."
 msgstr ""
+"Szkolenie studenta ma na celu nauczyć studentów oceniać przykładowe "
+"odpowiedzi innych kursantów w celu przeszkolenia ich na podstawie opcji ocen"
+" i by upewnić się, że ​​studenci rozumieją szablon etapu samooceny lub "
+"wzajemnej oceny."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_student_training.html:17
 msgid ""
@@ -522,10 +574,15 @@ msgid ""
 " to advance and are provided feedback when their score doesn't match the "
 "sample response."
 msgstr ""
+"Konfiguracja: Aby ten etap został poprawnie skonfigurowany, musisz podać co "
+"najmniej jedną przykładową odpowiedź wraz z jej oceną. Studenci muszą "
+"następnie ocenić pracę tak samo, jak Ty, aby móc przejść dalej; w przeciwnym"
+" razie otrzymają informację zwrotną, że ich ocena pracy nie pasuje do oceny "
+"twórcy."
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_student_training.html:22
 msgid "View / Add Sample Responses"
-msgstr ""
+msgstr "Wyświetl / Dodaj przykładowe odpowiedzi"
 
 #: openassessment/templates/openassessmentblock/edit/oa_edit_student_training.html:32
 msgid "Add Sample Response"
@@ -559,7 +616,9 @@ msgid ""
 "\n"
 "                %(start_tag)s%(title)s%(end_tag)s%(start_grade_tag)s - %(grade)s%(end_tag)s\n"
 "              "
-msgstr "\n%(start_tag)s%(title)s%(end_tag)s%(start_grade_tag)s - %(grade)s%(end_tag)s"
+msgstr ""
+"\n"
+"%(start_tag)s%(title)s%(end_tag)s%(start_grade_tag)s - %(grade)s%(end_tag)s"
 
 #: openassessment/templates/openassessmentblock/grade/oa_assessment_title.html:7
 #, python-format
@@ -571,10 +630,18 @@ msgid_plural ""
 "\n"
 "                      %(assessment_title)s - %(points)s points\n"
 "                  "
-msgstr[0] "\n%(assessment_title)s - %(points)s punkt"
-msgstr[1] "\n%(assessment_title)s - %(points)s punkty"
-msgstr[2] "\n%(assessment_title)s - %(points)s punktów"
-msgstr[3] "\n%(assessment_title)s - %(points)s punktów"
+msgstr[0] ""
+"\n"
+"%(assessment_title)s - %(points)s punkt"
+msgstr[1] ""
+"\n"
+"%(assessment_title)s - %(points)s punkty"
+msgstr[2] ""
+"\n"
+"%(assessment_title)s - %(points)s punktów"
+msgstr[3] ""
+"\n"
+"%(assessment_title)s - %(points)s punktów"
 
 #: openassessment/templates/openassessmentblock/grade/oa_assessment_title.html:24
 #, python-format
@@ -596,7 +663,9 @@ msgid ""
 "\n"
 "                                        %(points_earned)s out of %(points_possible)s\n"
 "                                    "
-msgstr "\n%(points_earned)s na %(points_possible)s"
+msgstr ""
+"\n"
+"%(points_earned)s na %(points_possible)s"
 
 #: openassessment/templates/openassessmentblock/grade/oa_grade_cancelled.html:38
 msgid "Your submission has been cancelled."
@@ -608,7 +677,9 @@ msgid ""
 "\n"
 "                                            %(points_earned)s out of %(points_possible)s\n"
 "                                        "
-msgstr "\n%(points_earned)s na %(points_possible)s"
+msgstr ""
+"\n"
+"%(points_earned)s na %(points_possible)s"
 
 #: openassessment/templates/openassessmentblock/grade/oa_grade_complete.html:38
 #: openassessment/templates/openassessmentblock/response/oa_response.html:29
@@ -670,19 +741,25 @@ msgstr "Wysyłanie opinii"
 msgid ""
 "Your feedback has been submitted. Course staff will be able to see this "
 "feedback when they review course records."
-msgstr "Twoja opinia została przesłana. Kadra kursu będzie mogła przeczytać tę opinię przeglądając dane kursu."
+msgstr ""
+"Twoja opinia została przesłana. Kadra kursu będzie mogła przeczytać tę "
+"opinię przeglądając dane kursu."
 
 #: openassessment/templates/openassessmentblock/grade/oa_grade_complete.html:140
 msgid ""
 "Course staff will be able to see any feedback that you provide here when "
 "they review course records."
-msgstr "Kadra kursu będzie mogła przeczytać zamieszczoną przez ciebie w tym miejscu opinię gdy będzie przeglądać dane kursu."
+msgstr ""
+"Kadra kursu będzie mogła przeczytać zamieszczoną przez ciebie w tym miejscu "
+"opinię gdy będzie przeglądać dane kursu."
 
 #: openassessment/templates/openassessmentblock/grade/oa_grade_complete.html:146
 msgid ""
 "Select the statements below that best reflect your experience with peer "
 "assessments."
-msgstr "Wybierz spośród poniższych określeń to, które najlepiej oddaje twoją opinię o uzyskanych ocenach."
+msgstr ""
+"Wybierz spośród poniższych określeń to, które najlepiej oddaje twoją opinię "
+"o uzyskanych ocenach."
 
 #: openassessment/templates/openassessmentblock/grade/oa_grade_complete.html:155
 msgid "These assessments were useful."
@@ -703,7 +780,8 @@ msgstr "Niektóre z otrzymanych komentarzy były nieodpowiednie."
 #: openassessment/templates/openassessmentblock/grade/oa_grade_complete.html:187
 msgid ""
 "Provide feedback on the grade or comments that you received from your peers."
-msgstr "Dodaj opinię o ocenach lub komentarzach otrzymanych od współkursantów."
+msgstr ""
+"Dodaj opinię o ocenach lub komentarzach otrzymanych od współkursantów."
 
 #: openassessment/templates/openassessmentblock/grade/oa_grade_complete.html:190
 msgid "I feel the feedback I received was..."
@@ -743,7 +821,10 @@ msgid ""
 "need to be done on your response. When the assessments of your response are "
 "complete, you will see feedback from everyone who assessed your response, "
 "and you will receive your final grade."
-msgstr "Ukończyłeś etapy tego zadania, jednak twoja odpowiedź wciąż wymaga więcej ocen. Gdy pojawią się oceny twojej odpowiedzi, zobaczysz opinię od każdego, kto dokonywał oceny, a także swoją ocenę końcową."
+msgstr ""
+"Ukończyłeś etapy tego zadania, jednak twoja odpowiedź wciąż wymaga więcej "
+"ocen. Gdy pojawią się oceny twojej odpowiedzi, zobaczysz opinię od każdego, "
+"kto dokonywał oceny, a także swoją ocenę końcową."
 
 #: openassessment/templates/openassessmentblock/instructor_dashboard/oa_grade_available_responses.html:15
 #: openassessment/templates/openassessmentblock/staff_area/oa_staff_area.html:15
@@ -755,7 +836,9 @@ msgstr "Oceń dostępne odpowiedzi"
 msgid ""
 "Grade Available Responses is unavailable. This item is not configured for "
 "Staff Assessment."
-msgstr "Ocenianie dostępnych odpowiedzi jest niemożliwe. Zadanie nie zostało skonfigurowane pod ocenianie przez kadrę."
+msgstr ""
+"Ocenianie dostępnych odpowiedzi jest niemożliwe. Zadanie nie zostało "
+"skonfigurowane pod ocenianie przez kadrę."
 
 #: openassessment/templates/openassessmentblock/instructor_dashboard/oa_listing.html:6
 msgid "Please wait"
@@ -776,7 +859,9 @@ msgstr "Odpowiedź twojego współkursanta na powyższe pytanie "
 msgid ""
 "After you complete all the steps of this assignment, you can see the top-"
 "scoring responses from your peers."
-msgstr "Po ukończeniu wszystkich etapów tego zadania będzie można zobaczyć najlepiej punktowane odpowiedzi twoich współkursantów."
+msgstr ""
+"Po ukończeniu wszystkich etapów tego zadania będzie można zobaczyć najlepiej"
+" punktowane odpowiedzi twoich współkursantów."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_cancelled.html:8
 msgid ""
@@ -795,44 +880,57 @@ msgstr ""
 msgid ""
 "This task is not yet available. Check back to complete the assignment once "
 "this section has opened."
-msgstr "Czynność jest jeszcze niedostępna. Wróć w celu ukończenia zadania po dacie otwarcia tego rozdziału."
+msgstr ""
+"Czynność jest jeszcze niedostępna. Wróć w celu ukończenia zadania po dacie "
+"otwarcia tego rozdziału."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_closed.html:10
 msgid ""
 "This assignment has closed. One or more deadlines for this assignment have "
 "passed. You will receive an incomplete grade for this assignment."
-msgstr "To zadanie jest już zamknięte. Minął ostateczny termin przewidziany dla zadania. Otrzymasz za nie niekompletną ocenę."
+msgstr ""
+"To zadanie jest już zamknięte. Minął ostateczny termin przewidziany dla "
+"zadania. Otrzymasz za nie niekompletną ocenę."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_complete.html:8
 msgid ""
 "You have completed this assignment. Your final grade will be available when "
 "the assessments of your response are complete."
-msgstr "Zadanie zostało przez ciebie ukończone. Otrzymasz swoją ocenę końcową gdy nastąpi ocena twoich odpowiedzi."
+msgstr ""
+"Zadanie zostało przez ciebie ukończone. Otrzymasz swoją ocenę końcową gdy "
+"nastąpi ocena twoich odpowiedzi."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_complete.html:10
 msgid ""
 "You have completed this assignment. Review your grade and your assessment "
 "details."
-msgstr "Zadanie zostało przez ciebie ukończone. Sprawdź swoją ocenę i jej szczegóły."
+msgstr ""
+"Zadanie zostało przez ciebie ukończone. Sprawdź swoją ocenę i jej szczegóły."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_incomplete.html:9
 msgid ""
 "This assignment is in progress. Learner training will close soon. Complete "
 "the learner training step to move on."
-msgstr "To zadanie znajduje się w toku. Etap szkoleniowy wkrótce dobiegnie końca, dlatego ukończ szkolenie studenta, aby przejść dalej."
+msgstr ""
+"To zadanie znajduje się w toku. Etap szkoleniowy wkrótce dobiegnie końca, "
+"dlatego ukończ szkolenie studenta, aby przejść dalej."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_incomplete.html:11
 msgid ""
 "This assignment is in progress. Complete the learner training step to move "
 "on."
-msgstr "To zadanie znajduje się w toku. Ukończ etap szkolenia studenta, aby przejść dalej."
+msgstr ""
+"To zadanie znajduje się w toku. Ukończ etap szkolenia studenta, aby przejść "
+"dalej."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_incomplete.html:15
 #: openassessment/templates/openassessmentblock/message/oa_message_incomplete.html:33
 msgid ""
 "This assignment is in progress. Check back later when the assessment period "
 "has started."
-msgstr "To zadanie znajduje się w toku. Wróć po dacie rozpoczęcia okresu oceniania prac."
+msgstr ""
+"To zadanie znajduje się w toku. Wróć po dacie rozpoczęcia okresu oceniania "
+"prac."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_incomplete.html:20
 #, python-format
@@ -840,7 +938,9 @@ msgid ""
 "\n"
 "                                    %(start_strong)sThis assignment is in progress. The self assessment step will close soon.%(end_strong)s You still need to complete the %(start_link)sself assessment%(end_link)s step.\n"
 "                                "
-msgstr "\n%(start_strong)sTo zadanie znajduje się w toku. Etap samodzielnej oceny wkrótce dobiegnie końca.%(end_strong)s Wciąż musisz dokonać %(start_link)ssamodzielnej oceny%(end_link)s."
+msgstr ""
+"\n"
+"%(start_strong)sTo zadanie znajduje się w toku. Etap samodzielnej oceny wkrótce dobiegnie końca.%(end_strong)s Wciąż musisz dokonać %(start_link)ssamodzielnej oceny%(end_link)s."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_incomplete.html:24
 #, python-format
@@ -848,7 +948,9 @@ msgid ""
 "\n"
 "                                    This assignment is in progress. You still need to complete the %(start_link)sself assessment%(end_link)s step.\n"
 "                                "
-msgstr "\nTo zadanie znajduje się w toku. Wciąż musisz wykonać etap %(start_link)ssamodzielnej oceny%(end_link)s."
+msgstr ""
+"\n"
+"To zadanie znajduje się w toku. Wciąż musisz wykonać etap %(start_link)ssamodzielnej oceny%(end_link)s."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_incomplete.html:38
 #, python-format
@@ -856,7 +958,9 @@ msgid ""
 "\n"
 "                                    This assignment is in progress.%(start_strong)sThe peer assessment step will close soon.%(end_strong)s All submitted peer responses have been assessed. Check back later to see if more learners have submitted responses. You still need to complete the %(start_link)speer assessment%(end_link)s step.\n"
 "                                "
-msgstr "\nTo zadanie znajduje się w toku.%(start_strong)sEtap wzajemnej oceny wkrótce dobiegnie końca.%(end_strong)s Wszystkie zgłoszone odpowiedzi zostały ocenione. Odwiedź to miejsce później, aby sprawdzić, czy kolejni studenci przesłali swoje prace. Wciąż musisz ukończyć etap %(start_link)swzajemnej oceny%(end_link)s."
+msgstr ""
+"\n"
+"To zadanie znajduje się w toku.%(start_strong)sEtap wzajemnej oceny wkrótce dobiegnie końca.%(end_strong)s Wszystkie zgłoszone odpowiedzi zostały ocenione. Odwiedź to miejsce później, aby sprawdzić, czy kolejni studenci przesłali swoje prace. Wciąż musisz ukończyć etap %(start_link)swzajemnej oceny%(end_link)s."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_incomplete.html:42
 #, python-format
@@ -864,7 +968,9 @@ msgid ""
 "\n"
 "                                    This assignment is in progress. All submitted peer responses have been assessed. Check back later to see if more learners have submitted responses. You still need to complete the %(start_link)speer assessment%(end_link)s step.\n"
 "                                "
-msgstr "\nTo zadanie znajduje się w toku. Wszystkie zgłoszone odpowiedzi zostały ocenione. Odwiedź to miejsce później, aby sprawdzić, czy kolejni studenci przesłali swoje prace. Wciąż musisz ukończyć etap %(start_link)swzajemnej oceny%(end_link)s."
+msgstr ""
+"\n"
+"To zadanie znajduje się w toku. Wszystkie zgłoszone odpowiedzi zostały ocenione. Odwiedź to miejsce później, aby sprawdzić, czy kolejni studenci przesłali swoje prace. Wciąż musisz ukończyć etap %(start_link)swzajemnej oceny%(end_link)s."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_incomplete.html:46
 #, python-format
@@ -872,7 +978,9 @@ msgid ""
 "\n"
 "                                    This assignment is in progress. %(start_strong)sThe peer assessment step will close soon.%(end_strong)s You still need to complete the %(start_link)speer assessment%(end_link)s step.\n"
 "                                "
-msgstr "\nTo zadanie znajduje się w toku. %(start_strong)sEtap wzajemnej oceny wkrótce dobiegnie końca.%(end_strong)s Wciąż musisz dokonać %(start_link)swzajemnej oceny%(end_link)s."
+msgstr ""
+"\n"
+"To zadanie znajduje się w toku. %(start_strong)sEtap wzajemnej oceny wkrótce dobiegnie końca.%(end_strong)s Wciąż musisz dokonać %(start_link)swzajemnej oceny%(end_link)s."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_incomplete.html:50
 #, python-format
@@ -880,7 +988,9 @@ msgid ""
 "\n"
 "                                    This assignment is in progress. You still need to complete the %(start_link)speer assessment%(end_link)s step.\n"
 "                                "
-msgstr "\nTo zadanie znajduje się w toku. Wciąż musisz wykonać etap %(start_link)swzajemnej oceny%(end_link)s."
+msgstr ""
+"\n"
+"To zadanie znajduje się w toku. Wciąż musisz wykonać etap %(start_link)swzajemnej oceny%(end_link)s."
 
 #: openassessment/templates/openassessmentblock/message/oa_message_no_team.html:4
 msgid "Team membership is required to view this assignment"
@@ -902,7 +1012,10 @@ msgid ""
 "\n"
 "                    Assignment submissions will close soon. To receive a grade, first provide a response to the prompt, then complete the steps below the %(start_tag)sYour Response%(end_tag)s field.\n"
 "                "
-msgstr "\n                    Możliwość przesyłania zadań do oceny wkrótce dobiegnie końca. Aby otrzymać ocenę, najpierw udziel odpowiedzi na pytanie, a następnie wykonaj etapy wskazane pod polem%(start_tag)sTwoja odpowiedź%(end_tag)s.\n                "
+msgstr ""
+"\n"
+"                    Możliwość przesyłania zadań do oceny wkrótce dobiegnie końca. Aby otrzymać ocenę, najpierw udziel odpowiedzi na pytanie, a następnie wykonaj etapy wskazane pod polem%(start_tag)sTwoja odpowiedź%(end_tag)s.\n"
+"                "
 
 #: openassessment/templates/openassessmentblock/message/oa_message_open.html:11
 #, python-format
@@ -910,7 +1023,10 @@ msgid ""
 "\n"
 "                    This assignment has several steps. In the first step, you'll provide a response to the prompt. The other steps appear below the %(start_tag)sYour Response%(end_tag)s field.\n"
 "                "
-msgstr "\n                    To zadanie składa się z kilku etapów. W pierwszym etapie musisz udzielić odpowiedzi na zadane pytanie. Kolejne kroki znajdują się pod polem %(start_tag)sTwoja odpowiedź%(end_tag)s.\n                "
+msgstr ""
+"\n"
+"                    To zadanie składa się z kilku etapów. W pierwszym etapie musisz udzielić odpowiedzi na zadane pytanie. Kolejne kroki znajdują się pod polem %(start_tag)sTwoja odpowiedź%(end_tag)s.\n"
+"                "
 
 #: openassessment/templates/openassessmentblock/message/oa_message_unavailable.html:4
 msgid "Instructions Unavailable"
@@ -925,7 +1041,10 @@ msgid ""
 "This assignment has several steps. In the first step, you'll provide a "
 "response to the prompt. The other steps appear below the Your Response "
 "field."
-msgstr "To zadanie składa się z kilku etapów. W pierwszym etapie musisz udzielić odpowiedzi na zadane pytanie. Kolejne kroki znajdują się pod polem \"Twoja odpowiedź\"."
+msgstr ""
+"To zadanie składa się z kilku etapów. W pierwszym etapie musisz udzielić "
+"odpowiedzi na zadane pytanie. Kolejne kroki znajdują się pod polem \"Twoja "
+"odpowiedź\"."
 
 #: openassessment/templates/openassessmentblock/oa_base.html:36
 msgid "Loading"
@@ -962,7 +1081,7 @@ msgstr "Zobacz pliki załączone do tego zgłoszenia:"
 
 #: openassessment/templates/openassessmentblock/oa_team_uploaded_files.html:31
 msgid "Uploaded by"
-msgstr ""
+msgstr "Przesłany przez"
 
 #: openassessment/templates/openassessmentblock/oa_uploaded_file.html:16
 msgid "Files that were uploaded by you:"
@@ -973,7 +1092,10 @@ msgid ""
 "Caution: These files were uploaded by another course learner and have not "
 "been verified, screened, approved, reviewed, or endorsed by the site "
 "administrator. If you access the files, you do so at your own risk.)"
-msgstr "Uwaga: te pliki zostały przesłane przez innego uczestnika kursu i nie zostały zweryfikowane, przeskanowane, zatwierdzone czy sprawdzone przez administratora platformy. Otwierając pliki robisz to na własne ryzyko.)"
+msgstr ""
+"Uwaga: te pliki zostały przesłane przez innego uczestnika kursu i nie "
+"zostały zweryfikowane, przeskanowane, zatwierdzone czy sprawdzone przez "
+"administratora platformy. Otwierając pliki robisz to na własne ryzyko.)"
 
 #: openassessment/templates/openassessmentblock/peer/oa_peer_assessment.html:26
 msgid "Assess Peers"
@@ -989,6 +1111,9 @@ msgid ""
 "            <span id=\"oa_step_deadline_peer\" class=\"date ora-datetime\" data-datetime=\"%(start_date)s\" data-string=\"available {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
 "            "
 msgstr ""
+"\n"
+"            <span id=\"oa_step_deadline_peer\" class=\"date ora-datetime\" data-datetime=\"%(start_date)s\" data-string=\"available {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
+"            "
 
 #. Translators: This string displays a date to the user, then tells them the
 #. time until that date.  Example: "due August 13th, 2014 00:00 UTC (in 5 days
@@ -1000,6 +1125,9 @@ msgid ""
 "            <span id=\"oa_step_deadline_peer\" class=\"date ora-datetime\" data-datetime=\"%(due_date)s\" data-string=\"due {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
 "            "
 msgstr ""
+"\n"
+"            <span id=\"oa_step_deadline_peer\" class=\"date ora-datetime\" data-datetime=\"%(due_date)s\" data-string=\"due {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
+"            "
 
 #: openassessment/templates/openassessmentblock/peer/oa_peer_assessment.html:51
 #, python-format
@@ -1012,7 +1140,8 @@ msgstr ""
 #: openassessment/templates/openassessmentblock/peer/oa_peer_assessment.html:65
 #: openassessment/templates/openassessmentblock/peer/oa_peer_turbo_mode.html:45
 msgid "Read and assess the following response from one of your peers."
-msgstr "Przeczytaj i oceń następującą odpowiedź jednego z twoich współkursantów."
+msgstr ""
+"Przeczytaj i oceń następującą odpowiedź jednego z twoich współkursantów."
 
 #: openassessment/templates/openassessmentblock/peer/oa_peer_assessment.html:77
 #: openassessment/templates/openassessmentblock/peer/oa_peer_turbo_mode.html:56
@@ -1045,14 +1174,19 @@ msgid ""
 "\n"
 "            Incomplete (%(num_graded)s of %(num_must_grade)s)\n"
 "        "
-msgstr "\nNie ukończono (oceniono %(num_graded)s spośród wymaganych %(num_must_grade)s)"
+msgstr ""
+"\n"
+"Nie ukończono (oceniono %(num_graded)s spośród wymaganych %(num_must_grade)s)"
 
 #: openassessment/templates/openassessmentblock/peer/oa_peer_closed.html:35
 msgid ""
 "The due date for this step has passed. This step is now closed. You can no "
 "longer complete peer assessments or continue with this assignment, and you "
 "will receive a grade of Incomplete."
-msgstr "Upłynął termin końcowy dla tego etapu, dlatego etap jest teraz zamknięty. Niemożliwe jest dalsze ocenianie prac lub kontynuowanie wykonywania tego zadania. Otrzymasz ocenę o statusie \"nie ukończono\"."
+msgstr ""
+"Upłynął termin końcowy dla tego etapu, dlatego etap jest teraz zamknięty. "
+"Niemożliwe jest dalsze ocenianie prac lub kontynuowanie wykonywania tego "
+"zadania. Otrzymasz ocenę o statusie \"nie ukończono\"."
 
 #: openassessment/templates/openassessmentblock/peer/oa_peer_complete.html:13
 msgid "Completed"
@@ -1065,7 +1199,11 @@ msgid ""
 "You have successfully completed all of the required peer assessments for "
 "this assignment. You may assess additional peer responses if you want to. "
 "Completing additional assessments will not affect your final grade."
-msgstr "Pomyślnie dokonano oceny wymaganej liczby odpowiedzi w ramach zadania z wzajemną oceną. Jeśli masz ochotę, możesz oceniać kolejne prace. Dokonywanie większej niż wymagana liczby ocen nie będzie mieć wpływu na twoją ocenę końcową."
+msgstr ""
+"Pomyślnie dokonano oceny wymaganej liczby odpowiedzi w ramach zadania z "
+"wzajemną oceną. Jeśli masz ochotę, możesz oceniać kolejne prace. Dokonywanie"
+" większej niż wymagana liczby ocen nie będzie mieć wpływu na twoją ocenę "
+"końcową."
 
 #: openassessment/templates/openassessmentblock/peer/oa_peer_complete.html:36
 msgid "We could not retrieve additional submissions for assessment"
@@ -1082,13 +1220,18 @@ msgid ""
 "\n"
 "        Complete (%(num_graded)s)\n"
 "      "
-msgstr "\nUkończono (%(num_graded)s)"
+msgstr ""
+"\n"
+"Ukończono (%(num_graded)s)"
 
 #: openassessment/templates/openassessmentblock/peer/oa_peer_turbo_mode_waiting.html:38
 msgid ""
 "All submitted peer responses have been assessed. Check back later to see if "
 "more learners have submitted responses."
-msgstr "Wszystkie przesłane przez kursantów odpowiedzi zostały ocenione. Wróć później, aby sprawdzić, czy kolejni studenci przesłali swoje odpowiedzi do oceny."
+msgstr ""
+"Wszystkie przesłane przez kursantów odpowiedzi zostały ocenione. Wróć "
+"później, aby sprawdzić, czy kolejni studenci przesłali swoje odpowiedzi do "
+"oceny."
 
 #: openassessment/templates/openassessmentblock/peer/oa_peer_unavailable.html:16
 #: openassessment/templates/openassessmentblock/response/oa_response_unavailable.html:17
@@ -1105,7 +1248,9 @@ msgid ""
 "\n"
 "          In Progress (%(review_number)s of %(num_must_grade)s)\n"
 "        "
-msgstr "\nW trakcie (%(review_number)s spośród %(num_must_grade)s)"
+msgstr ""
+"\n"
+"W trakcie (%(review_number)s spośród %(num_must_grade)s)"
 
 #: openassessment/templates/openassessmentblock/peer/oa_peer_waiting.html:37
 msgid ""
@@ -1113,7 +1258,11 @@ msgid ""
 "more learners have submitted responses. You will receive your grade after "
 "you've completed all the steps for this problem and your peers have assessed"
 " your response."
-msgstr "Wszystkie przesłane przez kursantów odpowiedzi zostały ocenione. Wróć później, aby sprawdzić, czy kolejni studenci przesłali swoje odpowiedzi do oceny. Otrzymasz swoją ocenę gdy wykonasz wszystkie etapy tego zadania, a współkursanci wydadzą opinie o twojej pracy."
+msgstr ""
+"Wszystkie przesłane przez kursantów odpowiedzi zostały ocenione. Wróć "
+"później, aby sprawdzić, czy kolejni studenci przesłali swoje odpowiedzi do "
+"oceny. Otrzymasz swoją ocenę gdy wykonasz wszystkie etapy tego zadania, a "
+"współkursanci wydadzą opinie o twojej pracy."
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:27
 msgid "Your Team's Response"
@@ -1129,6 +1278,9 @@ msgid ""
 "            <span id=\"oa_step_deadline_response\" class=\"date ora-datetime\" data-datetime=\"%(start_date)s\" data-string=\"available {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
 "            "
 msgstr ""
+"\n"
+"            <span id=\"oa_step_deadline_response\" class=\"date ora-datetime\" data-datetime=\"%(start_date)s\" data-string=\"available {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
+"            "
 
 #. Translators: This string displays a date to the user, then tells them the
 #. time until that date.  Example: "due August 13th, 2014 (in 5 days and 45
@@ -1140,6 +1292,9 @@ msgid ""
 "            <span id=\"oa_step_deadline_response\" class=\"date ora-datetime\" data-datetime=\"%(due_date)s\" data-string=\"due {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
 "            "
 msgstr ""
+"\n"
+"            <span id=\"oa_step_deadline_response\" class=\"date ora-datetime\" data-datetime=\"%(due_date)s\" data-string=\"due {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
+"            "
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:54
 #: openassessment/templates/openassessmentblock/self/oa_self_assessment.html:46
@@ -1183,11 +1338,13 @@ msgstr ""
 #: openassessment/templates/openassessmentblock/response/oa_response.html:104
 msgid ""
 "You can save your progress and return to complete your response at any time."
-msgstr "Możesz zapisać swój postęp, wrócić do zadania później i udzielić odpowiedzi w dowolnym czasie."
+msgstr ""
+"Możesz zapisać swój postęp, wrócić do zadania później i udzielić odpowiedzi "
+"w dowolnym czasie."
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:106
 msgid "After you submit your response, you cannot edit it"
-msgstr "Po przesłaniu odpowiedzi niemożliwa będzie jej edycja."
+msgstr "Po przesłaniu odpowiedzi niemożliwa będzie jej edycja"
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:116
 msgid "The prompt for this section"
@@ -1217,17 +1374,17 @@ msgstr ""
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:155
 msgid "Your Response "
-msgstr ""
+msgstr "Twoja odpowiedź"
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:159
 #: openassessment/templates/openassessmentblock/response/oa_response.html:228
 msgid "(Required)"
-msgstr ""
+msgstr "(wymagana)"
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:161
 #: openassessment/templates/openassessmentblock/response/oa_response.html:230
 msgid "(Optional)"
-msgstr ""
+msgstr "(Opcjonalnie)"
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:165
 msgid ""
@@ -1306,11 +1463,13 @@ msgstr "Prześlij pliki"
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:268
 msgid "Upload file"
-msgstr ""
+msgstr "Prześlij plik"
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:284
 msgid "You may continue to work on your response until you submit it."
-msgstr "Możesz kontynuować prace nad swoją odpowiedzią do momentu aż prześlesz ją do oceny."
+msgstr ""
+"Możesz kontynuować prace nad swoją odpowiedzią do momentu aż prześlesz ją do"
+" oceny."
 
 #: openassessment/templates/openassessmentblock/response/oa_response.html:290
 msgid "This is a team submission."
@@ -1362,7 +1521,9 @@ msgid ""
 "\n"
 "                                Your submission has been cancelled by %(removed_by_username)s on %(removed_datetime)s\n"
 "                            "
-msgstr "\nTwoje zgłoszenie zostało anulowane przez %(removed_by_username)s dn. %(removed_datetime)s"
+msgstr ""
+"\n"
+"Twoje zgłoszenie zostało anulowane przez %(removed_by_username)s dn. %(removed_datetime)s"
 
 #: openassessment/templates/openassessmentblock/response/oa_response_cancelled.html:41
 #, python-format
@@ -1370,7 +1531,9 @@ msgid ""
 "\n"
 "                               Your submission was cancelled on %(removed_datetime)s\n"
 "                            "
-msgstr "\nTwoje zgłoszenie zostało anulowane dn. %(removed_datetime)s"
+msgstr ""
+"\n"
+"Twoje zgłoszenie zostało anulowane dn. %(removed_datetime)s"
 
 #: openassessment/templates/openassessmentblock/response/oa_response_cancelled.html:48
 #, python-format
@@ -1378,7 +1541,9 @@ msgid ""
 "\n"
 "                            Comments: %(comments)s\n"
 "                        "
-msgstr "\nKomentarze: %(comments)s"
+msgstr ""
+"\n"
+"Komentarze: %(comments)s"
 
 #: openassessment/templates/openassessmentblock/response/oa_response_closed.html:19
 #: openassessment/templates/openassessmentblock/self/oa_self_closed.html:20
@@ -1392,7 +1557,12 @@ msgid ""
 "longer submit a response or continue with this problem, and you will receive"
 " a grade of Incomplete. If you saved but did not submit a response, the "
 "response appears in the course records."
-msgstr "Upłynął termin końcowy dla tego etapu, dlatego etap jest teraz zamknięty. Niemożliwe jest dalsze przesyłanie odpowiedzi lub kontynuowanie wykonywania tego zadania. Otrzymasz ocenę o statusie \"nie ukończono\". Jeśli odpowiedź została przez ciebie zapisana, ale nie została przesłana, będzie figurować w bazie danych kursu."
+msgstr ""
+"Upłynął termin końcowy dla tego etapu, dlatego etap jest teraz zamknięty. "
+"Niemożliwe jest dalsze przesyłanie odpowiedzi lub kontynuowanie wykonywania "
+"tego zadania. Otrzymasz ocenę o statusie \"nie ukończono\". Jeśli odpowiedź "
+"została przez ciebie zapisana, ale nie została przesłana, będzie figurować w"
+" bazie danych kursu."
 
 #: openassessment/templates/openassessmentblock/response/oa_response_graded.html:20
 #: openassessment/templates/openassessmentblock/response/oa_response_submitted.html:20
@@ -1418,7 +1588,9 @@ msgstr "Przesłane przez ciebie pliki"
 msgid ""
 "Your response has been submitted. You will receive your grade after all "
 "steps are complete and your response is fully assessed."
-msgstr "Twoja odpowiedź została wysłana. Otrzymasz swoją ocenę gdy wykonasz wszystkie etapy, a twoja odpowiedź zostanie sprawdzona."
+msgstr ""
+"Twoja odpowiedź została wysłana. Otrzymasz swoją ocenę gdy wykonasz "
+"wszystkie etapy, a twoja odpowiedź zostanie sprawdzona."
 
 #: openassessment/templates/openassessmentblock/response/oa_response_submitted.html:34
 #, python-format
@@ -1426,7 +1598,9 @@ msgid ""
 "\n"
 "                        You still need to complete the %(peer_start_tag)speer assessment%(end_tag)s and %(self_start_tag)sself assessment%(end_tag)s steps.\n"
 "                    "
-msgstr "\nWciąż musisz wykonać etapy %(peer_start_tag)swzajemnej oceny%(end_tag)s oraz %(self_start_tag)ssamodzielnej oceny%(end_tag)s."
+msgstr ""
+"\n"
+"Wciąż musisz wykonać etapy %(peer_start_tag)swzajemnej oceny%(end_tag)s oraz %(self_start_tag)ssamodzielnej oceny%(end_tag)s."
 
 #: openassessment/templates/openassessmentblock/response/oa_response_submitted.html:38
 #, python-format
@@ -1434,7 +1608,9 @@ msgid ""
 "\n"
 "                        You still need to complete the %(start_tag)speer assessment%(end_tag)s step.\n"
 "                    "
-msgstr "\nWciąż musisz wykonać etap %(start_tag)swzajemnej oceny%(end_tag)s."
+msgstr ""
+"\n"
+"Wciąż musisz wykonać etap %(start_tag)swzajemnej oceny%(end_tag)s."
 
 #: openassessment/templates/openassessmentblock/response/oa_response_submitted.html:42
 #, python-format
@@ -1442,11 +1618,13 @@ msgid ""
 "\n"
 "                        You still need to complete the %(start_tag)sself assessment%(end_tag)s step.\n"
 "                    "
-msgstr "\nWciąż musisz wykonać etap %(start_tag)ssamodzielnej oceny%(end_tag)s."
+msgstr ""
+"\n"
+"Wciąż musisz wykonać etap %(start_tag)ssamodzielnej oceny%(end_tag)s."
 
 #: openassessment/templates/openassessmentblock/response/oa_response_team_already_submitted.html:15
 msgid "Error"
-msgstr ""
+msgstr "Błąd"
 
 #: openassessment/templates/openassessmentblock/response/oa_response_team_already_submitted.html:29
 #, python-format
@@ -1473,6 +1651,9 @@ msgid ""
 "               <span id=\"oa_step_deadline_self\" class=\"date ora-datetime\" data-datetime=\"%(start_date)s\" data-string=\"available {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
 "           "
 msgstr ""
+"\n"
+"               <span id=\"oa_step_deadline_self\" class=\"date ora-datetime\" data-datetime=\"%(start_date)s\" data-string=\"available {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
+"           "
 
 #. Translators: This string displays a date to the user, then tells them the
 #. time until that date.  Example: "due August 13th, 2014 (in 5 days and 45
@@ -1484,6 +1665,9 @@ msgid ""
 "               <span id=\"oa_step_deadline_self\" class=\"date ora-datetime\" data-datetime=\"%(due_date)s\" data-string=\"due {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
 "           "
 msgstr ""
+"\n"
+"               <span id=\"oa_step_deadline_self\" class=\"date ora-datetime\" data-datetime=\"%(due_date)s\" data-string=\"due {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
+"           "
 
 #: openassessment/templates/openassessmentblock/self/oa_self_assessment.html:78
 msgid "Submit your assessment"
@@ -1494,7 +1678,10 @@ msgid ""
 "The due date for this step has passed. This step is now closed. You can no "
 "longer complete a self assessment or continue with this assignment, and you "
 "will receive a grade of Incomplete."
-msgstr "Upłynął termin końcowy dla tego etapu, dlatego etap jest teraz zamknięty. Niemożliwe jest dalsze dokonywanie samodzielnej oceny lub kontynuowanie wykonywania tego zadania. Otrzymasz ocenę o statusie \"nie ukończono\"."
+msgstr ""
+"Upłynął termin końcowy dla tego etapu, dlatego etap jest teraz zamknięty. "
+"Niemożliwe jest dalsze dokonywanie samodzielnej oceny lub kontynuowanie "
+"wykonywania tego zadania. Otrzymasz ocenę o statusie \"nie ukończono\"."
 
 #: openassessment/templates/openassessmentblock/staff/oa_staff_grade.html:13
 #: openassessment/xblock/grade_mixin.py:359
@@ -1598,7 +1785,9 @@ msgid ""
 "\n"
 "                                        Response for: %(student_username)s\n"
 "                                    "
-msgstr "\nOdpowiedź dla: %(student_username)s"
+msgstr ""
+"\n"
+"Odpowiedź dla: %(student_username)s"
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_staff_grade_learners_assessment.html:34
 #: openassessment/templates/openassessmentblock/staff_area/oa_staff_override_assessment.html:24
@@ -1630,11 +1819,14 @@ msgid ""
 "\n"
 "                %(ungraded)s Available and %(in_progress)s Checked Out\n"
 "            "
-msgstr "\n%(ungraded)s dostępnych i %(in_progress)s sprawdzonych"
+msgstr ""
+"\n"
+"%(ungraded)s dostępnych i %(in_progress)s sprawdzonych"
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_staff_override_assessment.html:7
 msgid "Override this learner's current grade using the problem's rubric."
-msgstr "Nadpisz obecną ocenę tego studenta korzystając z szablonu dla ćwiczenia."
+msgstr ""
+"Nadpisz obecną ocenę tego studenta korzystając z szablonu dla ćwiczenia."
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_staff_override_assessment.html:9
 msgid "Override this team's current grade using the problem's rubric."
@@ -1679,7 +1871,9 @@ msgid ""
 "\n"
 "                            Learner submission removed by %(removed_by_username)s on %(removed_datetime)s\n"
 "                        "
-msgstr "\nZgłoszenie studenta usunięte przez %(removed_by_username)s dn. %(removed_datetime)s"
+msgstr ""
+"\n"
+"Zgłoszenie studenta usunięte przez %(removed_by_username)s dn. %(removed_datetime)s"
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_student_info.html:43
 #, python-format
@@ -1687,7 +1881,9 @@ msgid ""
 "\n"
 "                            Learner submission removed on %(removed_datetime)s\n"
 "                        "
-msgstr "\nZgłoszenie studenta usunięte dn. %(removed_datetime)s"
+msgstr ""
+"\n"
+"Zgłoszenie studenta usunięte dn. %(removed_datetime)s"
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_student_info.html:50
 #, python-format
@@ -1695,7 +1891,9 @@ msgid ""
 "\n"
 "                        Comments: %(comments)s\n"
 "                    "
-msgstr "\nKomentarze: %(comments)s"
+msgstr ""
+"\n"
+"Komentarze: %(comments)s"
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_student_info.html:71
 msgid "Peer Assessments for This Learner"
@@ -1715,7 +1913,7 @@ msgstr "Ocena kadry dla tego studenta"
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_student_info.html:89
 msgid "Staff Assessment for this Team"
-msgstr ""
+msgstr "Ocena kadry dla tego zespołu"
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_student_info.html:100
 msgid "Learner's Final Grade"
@@ -1731,7 +1929,9 @@ msgid ""
 "\n"
 "                            Final grade: %(points_earned)s out of %(points_possible)s\n"
 "                        "
-msgstr "\nOcena końcowa: %(points_earned)s na %(points_possible)s"
+msgstr ""
+"\n"
+"Ocena końcowa: %(points_earned)s na %(points_possible)s"
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_student_info.html:119
 msgid "Final Grade Details"
@@ -1747,10 +1947,18 @@ msgid_plural ""
 "\n"
 "                                        %(assessment_label)s - %(points)s points\n"
 "                                    "
-msgstr[0] "\n%(assessment_label)s - %(points)s punkt"
-msgstr[1] "\n%(assessment_label)s - %(points)s punkty"
-msgstr[2] "\n%(assessment_label)s - %(points)s punktów"
-msgstr[3] "\n%(assessment_label)s - %(points)s punktów"
+msgstr[0] ""
+"\n"
+"%(assessment_label)s - %(points)s punkt"
+msgstr[1] ""
+"\n"
+"%(assessment_label)s - %(points)s punkty"
+msgstr[2] ""
+"\n"
+"%(assessment_label)s - %(points)s punktów"
+msgstr[3] ""
+"\n"
+"%(assessment_label)s - %(points)s punktów"
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_student_info.html:154
 msgid "Feedback Recorded"
@@ -1765,7 +1973,11 @@ msgid ""
 "The learner's submission has been removed from peer assessment. The learner "
 "receives a grade of zero unless you delete the learner's state for the "
 "problem to allow them to resubmit a response."
-msgstr "Zgłoszenie przesłane przez studenta zostało usunięte z systemu wzajemnej oceny. Student otrzyma ocenę zero, chyba, że zdecydujesz się usunąć stan studenta dla ćwiczenia, dzięki czemu będzie mógł przygotować i wysłać nowe zgłoszenie."
+msgstr ""
+"Zgłoszenie przesłane przez studenta zostało usunięte z systemu wzajemnej "
+"oceny. Student otrzyma ocenę zero, chyba, że zdecydujesz się usunąć stan "
+"studenta dla ćwiczenia, dzięki czemu będzie mógł przygotować i wysłać nowe "
+"zgłoszenie."
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_student_info.html:172
 msgid ""
@@ -1823,7 +2035,9 @@ msgstr "Ostrożnie: tej czynności nie można cofnąć"
 msgid ""
 "Removing a learner's submission cannot be undone and should be done with "
 "caution."
-msgstr "Usunięcia zgłoszenia studenta nie będzie można cofnąć, dlatego proszę używać tej opcji z rozwagą."
+msgstr ""
+"Usunięcia zgłoszenia studenta nie będzie można cofnąć, dlatego proszę używać"
+" tej opcji z rozwagą."
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_student_info.html:246
 msgid ""
@@ -1849,7 +2063,9 @@ msgid ""
 "\n"
 "                            Assessment %(assessment_num)s:\n"
 "                        "
-msgstr "\nOcena %(assessment_num)s:"
+msgstr ""
+"\n"
+"Ocena %(assessment_num)s:"
 
 #: openassessment/templates/openassessmentblock/staff_area/oa_student_info_assessment_detail.html:22
 msgid "Assessment Details"
@@ -1893,6 +2109,9 @@ msgid ""
 "            <span id=\"oa_step_deadline\" class=\"date ora-datetime\" data-datetime=\"%(start_date)s\" data-string=\"available {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
 "            "
 msgstr ""
+"\n"
+"            <span id=\"oa_step_deadline\" class=\"date ora-datetime\" data-datetime=\"%(start_date)s\" data-string=\"available {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
+"            "
 
 #. Translators: This string displays a date to the user, then tells them the
 #. time until that date.  Example: "due August 13th, 2014 (in 5 days and 45
@@ -1904,6 +2123,9 @@ msgid ""
 "            <span id=\"oa_step_deadline\" class=\"date ora-datetime\" data-datetime=\"%(due_date)s\" data-string=\"due {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
 "            "
 msgstr ""
+"\n"
+"            <span id=\"oa_step_deadline\" class=\"date ora-datetime\" data-datetime=\"%(due_date)s\" data-string=\"due {date} (in %(time_until)s)\" data-timezone=\"%(user_timezone)s\" data-language=\"%(user_language)s\"></span>\n"
+"            "
 
 #: openassessment/templates/openassessmentblock/student_training/student_training.html:56
 #: openassessment/templates/openassessmentblock/student_training/student_training.html:64
@@ -1917,14 +2139,23 @@ msgid ""
 "already assessed. If you select the same options for the response that the "
 "instructor selected, you'll move to the next step. If you don't select the "
 "same options, you'll review the response and try again."
-msgstr "Zanim rozpoczniesz ocenianie odpowiedzi swoich kolegów, nauczysz się, w jaki sposób należy oceniać prace w systemie wzajemnej oceny poprzez zapoznanie się z odpowiedziami, które zostały wcześniej ocenione przez kadrę kursu. Jeśli opcje, które wybierzesz dla danej odpowiedzi, będą zgodne z oceną prowadzącego, wówczas przejdziesz do kolejnego etapu. Jeśli ci się to nie uda, spróbujesz ponownie."
+msgstr ""
+"Zanim rozpoczniesz ocenianie odpowiedzi swoich kolegów, nauczysz się, w jaki"
+" sposób należy oceniać prace w systemie wzajemnej oceny poprzez zapoznanie "
+"się z odpowiedziami, które zostały wcześniej ocenione przez kadrę kursu. "
+"Jeśli opcje, które wybierzesz dla danej odpowiedzi, będą zgodne z oceną "
+"prowadzącego, wówczas przejdziesz do kolejnego etapu. Jeśli ci się to nie "
+"uda, spróbujesz ponownie."
 
 #: openassessment/templates/openassessmentblock/student_training/student_training.html:67
 msgid ""
 "Your assessment differs from the instructor's assessment of this response. "
 "Review the response and consider why the instructor may have assessed it "
 "differently. Then, try the assessment again."
-msgstr "Twoja ocena tej odpowiedzi różni się od oceny prowadzącego. Dokładnie zapoznaj się z odpowiedzią i zastanów się dlaczego prowadzący ocenił ją inaczej. Następnie spróbuj dokonać oceny jeszcze raz."
+msgstr ""
+"Twoja ocena tej odpowiedzi różni się od oceny prowadzącego. Dokładnie "
+"zapoznaj się z odpowiedzią i zastanów się dlaczego prowadzący ocenił ją "
+"inaczej. Następnie spróbuj dokonać oceny jeszcze raz."
 
 #: openassessment/templates/openassessmentblock/student_training/student_training.html:74
 msgid "The response to the prompt above:"
@@ -1960,7 +2191,10 @@ msgid ""
 "The due date for this step has passed. This step is now closed. You can no "
 "longer continue with this assignment, and you will receive a grade of "
 "Incomplete."
-msgstr "Upłynął termin końcowy dla tego etapu, dlatego etap jest teraz zamknięty. Niemożliwe jest kontynuowanie wykonywania tego zadania. Otrzymasz ocenę o statusie \"nie ukończono\"."
+msgstr ""
+"Upłynął termin końcowy dla tego etapu, dlatego etap jest teraz zamknięty. "
+"Niemożliwe jest kontynuowanie wykonywania tego zadania. Otrzymasz ocenę o "
+"statusie \"nie ukończono\"."
 
 #: openassessment/templates/openassessmentblock/student_training/student_training_error.html:18
 msgid "Error Loading Learner Training Examples"
@@ -1981,6 +2215,157 @@ msgstr "W ocenie musisz zawrzeć ocenę końcową."
 #: openassessment/xblock/data_conversion.py:269
 msgid "You must provide feedback for criteria in the assessment."
 msgstr "Musisz dodać opinię do kryteriów zawartych w ocenie."
+
+#: openassessment/xblock/defaults.py:6
+msgid ""
+"\n"
+"    Censorship in the Libraries\n"
+"\n"
+"    'All of us can think of a book that we hope none of our children or any other children have taken off the shelf. But if I have the right to remove that book from the shelf -- that work I abhor -- then you also have exactly the same right and so does everyone else. And then we have no books left on the shelf for any of us.' --Katherine Paterson, Author\n"
+"\n"
+"    Write a persuasive essay to a newspaper reflecting your views on censorship in libraries. Do you believe that certain materials, such as books, music, movies, magazines, etc., should be removed from the shelves if they are found offensive? Support your position with convincing arguments from your own experience, observations, and/or reading.\n"
+"\n"
+"    Read for conciseness, clarity of thought, and form.\n"
+msgstr ""
+"\n"
+"    Cenzura w bibliotekach\n"
+"\n"
+"    \"Każdy z nas może pomyśleć o książce, która nie powinna wpaść w ręce żadnemu dziecku. Jednak jeśli ja mam prawo usunąć książkę, której nie lubię, z bibliotecznej półki, to takie samo prawo mają pozostali. W rezultacie znikną wszystkie książki.\" -- Katherine Paterson, autorka\n"
+"\n"
+"    Napisz przekonujący esej do gazety, w którym zawrzesz swoje poglądy na temat cenzury. Czy uważasz, że twórczość, która została uznana za szkodliwą (książki, dzieła muzyczne, filmy, czasopisma itp.) powinna zostać zakazana? Uargumentuj swoją opinię, przytocz przykłady ze swojego doświadczenia i obserwacji.\n"
+"\n"
+"    Zwróć uwagę na zwięzłość, jasności myśli i formę.\n"
+
+#: openassessment/xblock/defaults.py:19 openassessment/xblock/defaults.py:97
+#: openassessment/xblock/defaults.py:110
+msgid "Ideas"
+msgstr "Idee"
+
+#: openassessment/xblock/defaults.py:20
+msgid "Determine if there is a unifying theme or main idea."
+msgstr "Czy w odpowiedzi zawarta została jakaś myśl przewodnia (idea)?"
+
+#: openassessment/xblock/defaults.py:25 openassessment/xblock/defaults.py:45
+#: openassessment/xblock/defaults.py:111
+msgid "Poor"
+msgstr "Niedostatecznie"
+
+#: openassessment/xblock/defaults.py:26
+msgid ""
+"Difficult for the reader to discern the main idea.  Too brief or too "
+"repetitive to establish or maintain a focus."
+msgstr ""
+"Uchwycenie myśli przewodniej jest problematyczne. Jest ona zbyt krótka lub "
+"zbyt powtarzalna, by móc ją uchwycić. "
+
+#: openassessment/xblock/defaults.py:29 openassessment/xblock/defaults.py:49
+#: openassessment/xblock/defaults.py:98
+msgid "Fair"
+msgstr "Dostatecznie"
+
+#: openassessment/xblock/defaults.py:30
+msgid ""
+"Presents a unifying theme or main idea, but may include minor tangents.  "
+"Stays somewhat focused on topic and task."
+msgstr ""
+"Przedstawia myśl przewodnią, ale może zawierać drobne niedociągnięcia. Do "
+"pewnego stopnia jest związana z tematem pracy. "
+
+#: openassessment/xblock/defaults.py:33 openassessment/xblock/defaults.py:53
+#: openassessment/xblock/defaults.py:102 openassessment/xblock/defaults.py:115
+msgid "Good"
+msgstr "Dobrze"
+
+#: openassessment/xblock/defaults.py:34
+msgid ""
+"Presents a unifying theme or main idea without going off on tangents.  Stays"
+" completely focused on topic and task."
+msgstr ""
+"Przedstawia myśl przewodnią bez zbaczania z tematu. Pozostaje całkowicie "
+"skoncentrowany na temacie i zadaniu."
+
+#: openassessment/xblock/defaults.py:41
+msgid "Assess the content of the submission"
+msgstr "Oceń treść przesłanej odpowiedzi."
+
+#: openassessment/xblock/defaults.py:46
+msgid ""
+"Includes little information with few or no details or unrelated details.  "
+"Unsuccessful in attempts to explore any facets of the topic."
+msgstr ""
+"Zawiera niewiele istotnych informacji, treść pozbawiona szczegółów, zbyt "
+"ogólna. Nieudana próba podejścia do tematu."
+
+#: openassessment/xblock/defaults.py:50
+msgid ""
+"Includes little information and few or no details.  Explores only one or two"
+" facets of the topic."
+msgstr ""
+"Zawiera niewiele istotnych informacji i niewiele szczegółów. Został "
+"poruszony jeden/dwa aspekty tematu."
+
+#: openassessment/xblock/defaults.py:54
+msgid ""
+"Includes sufficient information and supporting details. (Details may not be "
+"fully developed; ideas may be listed.)  Explores some facets of the topic."
+msgstr ""
+"Zawiera wyczerpujące informacje i istotne szczegóły. (Szczegóły mogą nie być"
+" w pełni dopracowane; idee mogą być wymienione). Niektóre aspekty tematu "
+"zostały poruszone."
+
+#: openassessment/xblock/defaults.py:57
+msgid "Excellent"
+msgstr "Bardzo dobrze"
+
+#: openassessment/xblock/defaults.py:58
+msgid ""
+"Includes in-depth information and exceptional supporting details that are "
+"fully developed.  Explores all facets of the topic."
+msgstr ""
+"Zawiera wyczerpujące informacje i istotne szczegóły. Wszystkie aspekty "
+"tematu zostały poruszone."
+
+#: openassessment/xblock/defaults.py:66
+msgid ""
+"\n"
+"(Optional) What aspects of this response stood out to you? What did it do well? How could it be improved?\n"
+msgstr ""
+"\n"
+"(Opcjonalnie) Co wyróżnia tę odpowiedź? Co zostało zrobione dobrze? Co można poprawić?\n"
+
+#: openassessment/xblock/defaults.py:72
+msgid ""
+"\n"
+"I think that this response...\n"
+msgstr ""
+"\n"
+"Myślę, że ta odpowiedź jest...\n"
+
+#: openassessment/xblock/defaults.py:77
+msgid ""
+"Replace this text with your own sample response for this assignment. Then, "
+"under Response Score to the right, select an option for each criterion. "
+"Learners practice performing peer assessments by assessing this response and"
+" comparing the options that they select in the rubric with the options that "
+"you specified."
+msgstr ""
+"Zastąp ten tekst własną przykładową odpowiedzią na to zadanie. Następnie po "
+"prawej stronie w Ocena odpowiedzi wybierz opcję do każdego kryterium. "
+"Studenci uczą się wzajemnego oceniania swoich prac porównując swoje "
+"odpowiedzi do wybranych przez ciebie opcji. "
+
+#: openassessment/xblock/defaults.py:84
+msgid ""
+"Replace this text with another sample response, and then specify the options"
+" that you would select for this response."
+msgstr ""
+"Zastąp ten tekst własną przykładową odpowiedzią na to zadanie. Następnie "
+"wybierz opcje, które ty byś wybrał/a. "
+
+#: openassessment/xblock/defaults.py:101 openassessment/xblock/defaults.py:114
+#: openassessment/xblock/defaults.py:40
+msgid "Content"
+msgstr "Treść"
 
 #: openassessment/xblock/grade_mixin.py:76
 #: openassessment/xblock/leaderboard_mixin.py:58
@@ -2075,7 +2460,9 @@ msgstr ""
 
 #: openassessment/xblock/peer_assessment_mixin.py:61
 msgid "You must submit a response before you can perform a peer assessment."
-msgstr "Musisz przesłać odpowiedź, zanim będziesz mógł przejść do oceniania prac innych osób."
+msgstr ""
+"Musisz przesłać odpowiedź, zanim będziesz mógł przejść do oceniania prac "
+"innych osób."
 
 #: openassessment/xblock/peer_assessment_mixin.py:74
 msgid ""
@@ -2115,7 +2502,9 @@ msgstr "Prześlij swoją ocenę i przejdź do odpowiedzi #{response_number}"
 msgid ""
 "'{date}' is an invalid date format. Make sure the date is formatted as YYYY-"
 "MM-DDTHH:MM:SS."
-msgstr "'{date}' jest nieprawidłowym formatem daty. Upewnij się, że data została sformułowana następująco: RRRR-MM-DDTHH:MM:SS."
+msgstr ""
+"'{date}' jest nieprawidłowym formatem daty. Upewnij się, że data została "
+"sformułowana następująco: RRRR-MM-DDTHH:MM:SS."
 
 #: openassessment/xblock/resolve_dates.py:57
 #, python-brace-format
@@ -2127,23 +2516,30 @@ msgstr "'{date}' musi być wierszem daty lub formatem datetime"
 msgid ""
 "This step's start date '{start}' cannot be earlier than the previous step's "
 "start date '{prev}'."
-msgstr "Data rozpoczęcia tego etapu '{start}' nie może być wcześniejsza od daty rozpoczęcia poprzedniego etapu '{prev}'."
+msgstr ""
+"Data rozpoczęcia tego etapu '{start}' nie może być wcześniejsza od daty "
+"rozpoczęcia poprzedniego etapu '{prev}'."
 
 #: openassessment/xblock/resolve_dates.py:218
 #, python-brace-format
 msgid ""
 "This step's due date '{due}' cannot be later than the next step's due date "
 "'{prev}'."
-msgstr "Termin końcowy tego etapu '{due}' nie może być późniejszy od terminu końcowego kolejnego etapu '{prev}'."
+msgstr ""
+"Termin końcowy tego etapu '{due}' nie może być późniejszy od terminu "
+"końcowego kolejnego etapu '{prev}'."
 
 #: openassessment/xblock/resolve_dates.py:234
 #, python-brace-format
 msgid "The start date '{start}' cannot be later than the due date '{due}'"
-msgstr "Data rozpoczęcia '{start}' nie może być późniejsza od terminu końcowego '{due}'"
+msgstr ""
+"Data rozpoczęcia '{start}' nie może być późniejsza od terminu końcowego "
+"'{due}'"
 
 #: openassessment/xblock/self_assessment_mixin.py:142
 msgid "You must submit a response before you can perform a self-assessment."
-msgstr "Musisz przesłać odpowiedź, zanim będziesz mógł dokonać samodzielnej oceny."
+msgstr ""
+"Musisz przesłać odpowiedź, zanim będziesz mógł dokonać samodzielnej oceny."
 
 #: openassessment/xblock/self_assessment_mixin.py:164
 #: openassessment/xblock/self_assessment_mixin.py:171
@@ -2160,11 +2556,13 @@ msgstr "Nie posiadasz uprawnień do zmieniania terminów czynności."
 
 #: openassessment/xblock/staff_area_mixin.py:69
 msgid "You do not have permission to access the ORA staff area"
-msgstr "Nie posiadasz uprawnień dostępu do strefy zadań z otwartą odpowiedzią."
+msgstr ""
+"Nie posiadasz uprawnień dostępu do strefy zadań z otwartą odpowiedzią."
 
 #: openassessment/xblock/staff_area_mixin.py:70
 msgid "You do not have permission to access ORA learner information."
-msgstr "Nie posiadasz uprawnień dostępu do wyników zadań z otwartą odpowiedzią."
+msgstr ""
+"Nie posiadasz uprawnień dostępu do wyników zadań z otwartą odpowiedzią."
 
 #: openassessment/xblock/staff_area_mixin.py:71
 msgid "You do not have permission to access ORA staff grading."
@@ -2176,7 +2574,8 @@ msgstr "Wystąpił błąd w trakcie uzyskiwania informacji o studentach."
 
 #: openassessment/xblock/staff_area_mixin.py:228
 msgid "Error loading the checked out learner response."
-msgstr "Wystąpił błąd w trakcie wczytywania odpowiedzi sprawdzonych przez studentów."
+msgstr ""
+"Wystąpił błąd w trakcie wczytywania odpowiedzi sprawdzonych przez studentów."
 
 #: openassessment/xblock/staff_area_mixin.py:229
 msgid "No other learner responses are available for grading at this time."
@@ -2188,7 +2587,9 @@ msgstr "Wystąpił błąd w trakcie uzyskiwania informacji o ocenach kadry."
 
 #: openassessment/xblock/staff_area_mixin.py:252
 msgid "Error getting staff grade ungraded and checked out counts."
-msgstr "Wystąpił błąd w trakcie uzyskiwania statystyk ocenionych i nieocenionych prac przez kadrę."
+msgstr ""
+"Wystąpił błąd w trakcie uzyskiwania statystyk ocenionych i nieocenionych "
+"prac przez kadrę."
 
 #: openassessment/xblock/staff_area_mixin.py:541
 msgid "Please enter valid reason to remove the submission."
@@ -2207,7 +2608,11 @@ msgid ""
 "The learner submission has been removed from peer assessment. The learner "
 "receives a grade of zero unless you delete the learner's state for the "
 "problem to allow them to resubmit a response."
-msgstr "Zgłoszenie przesłane przez studenta zostało usunięte z systemu wzajemnej oceny. Student otrzyma ocenę zero, chyba, że zdecydujesz się usunąć stan studenta dla ćwiczenia, dzięki czemu będzie mógł przygotować i wysłać nowe zgłoszenie."
+msgstr ""
+"Zgłoszenie przesłane przez studenta zostało usunięte z systemu wzajemnej "
+"oceny. Student otrzyma ocenę zero, chyba, że zdecydujesz się usunąć stan "
+"studenta dla ćwiczenia, dzięki czemu będzie mógł przygotować i wysłać nowe "
+"zgłoszenie."
 
 #: openassessment/xblock/staff_area_mixin.py:625
 msgid ""
@@ -2228,7 +2633,7 @@ msgstr "Nie udało się wysłać twojej oceny."
 #: openassessment/xblock/staff_assessment_mixin.py:116
 #: openassessment/xblock/staff_assessment_mixin.py:123
 msgid "Your team assessment could not be submitted."
-msgstr ""
+msgstr "Nie udało się wysłać oceny zespołu."
 
 #: openassessment/xblock/staff_assessment_mixin.py:175
 msgid "Waiting for a Staff Grade"
@@ -2238,7 +2643,9 @@ msgstr "Oczekuje na ocenę kadry"
 msgid ""
 "Check back later to see if a course staff member has assessed your response."
 " You will receive your grade after the assessment is complete."
-msgstr "Wróć później, aby sprawdzić, czy członek kadry dokonał oceny twojej odpowiedzi. Otrzymasz swoją ocenę po ukończeniu całego zadania."
+msgstr ""
+"Wróć później, aby sprawdzić, czy członek kadry dokonał oceny twojej "
+"odpowiedzi. Otrzymasz swoją ocenę po ukończeniu całego zadania."
 
 #: openassessment/xblock/staff_assessment_mixin.py:189
 msgid "You Must Complete the Steps Above to View Your Grade"
@@ -2249,7 +2656,9 @@ msgid ""
 "Although a course staff member has assessed your response, you will receive "
 "your grade only after you have completed all the required steps of this "
 "problem."
-msgstr "Chociaż członek kadry kursu dokonał oceny twojej odpowiedzi, otrzymasz swoją ocenę dopiero po ukończeniu wszystkich wymaganych etapów tego zadania."
+msgstr ""
+"Chociaż członek kadry kursu dokonał oceny twojej odpowiedzi, otrzymasz swoją"
+" ocenę dopiero po ukończeniu wszystkich wymaganych etapów tego zadania."
 
 #: openassessment/xblock/student_training_mixin.py:227
 msgid "Missing options_selected key in request"
@@ -2264,91 +2673,99 @@ msgstr "options_selected musi być elementem słownika"
 msgid "Your scores could not be checked."
 msgstr "Nie udało się sprawdzić twoich wyników."
 
-#: openassessment/xblock/studio_mixin.py:196
-#: openassessment/xblock/studio_mixin.py:208
+#: openassessment/xblock/studio_mixin.py:204
+#: openassessment/xblock/studio_mixin.py:216
 msgid "Error updating XBlock configuration"
 msgstr "Wystąpił błąd w trakcie zmiany konfiguracji XBlocka"
 
-#: openassessment/xblock/studio_mixin.py:211
+#: openassessment/xblock/studio_mixin.py:219
 msgid "Error: both text and file upload responses can't be disabled"
-msgstr "Błąd: nie można równocześnie wyłączyć odpowiedzi tekstowych i odpowiedzi w formie pliku"
+msgstr ""
+"Błąd: nie można równocześnie wyłączyć odpowiedzi tekstowych i odpowiedzi w "
+"formie pliku"
 
-#: openassessment/xblock/studio_mixin.py:214
+#: openassessment/xblock/studio_mixin.py:222
 msgid ""
 "Error: in case if text response is disabled file upload response must be "
 "required"
-msgstr "Błąd: w przypadku wyłączenia odpowiedzi tekstowych wymagane jest przyjmowanie odpowiedzi w formie pliku"
+msgstr ""
+"Błąd: w przypadku wyłączenia odpowiedzi tekstowych wymagane jest "
+"przyjmowanie odpowiedzi w formie pliku"
 
-#: openassessment/xblock/studio_mixin.py:217
+#: openassessment/xblock/studio_mixin.py:225
 msgid ""
 "Error: in case if file upload response is disabled text response must be "
 "required"
-msgstr "Błąd: w przypadku wyłączenia odpowiedzi w formie pliku wymagane jest przyjmowanie odpowiedzi tekstowych"
+msgstr ""
+"Błąd: w przypadku wyłączenia odpowiedzi w formie pliku wymagane jest "
+"przyjmowanie odpowiedzi tekstowych"
 
-#: openassessment/xblock/studio_mixin.py:241
+#: openassessment/xblock/studio_mixin.py:249
 #, python-brace-format
 msgid "Validation error: {error}"
 msgstr "Błąd walidacji: {error}"
 
-#: openassessment/xblock/studio_mixin.py:270
+#: openassessment/xblock/studio_mixin.py:278
 msgid "Successfully updated OpenAssessment XBlock"
 msgstr "Pomyślnie zaktualizowano OpenAssessment XBlock"
 
-#: openassessment/xblock/submission_mixin.py:113
+#: openassessment/xblock/submission_mixin.py:114
 msgid "\"submission\" required to submit answer."
 msgstr "Do przesłania odpowiedzi wymagane jest \"submission\"."
 
-#: openassessment/xblock/submission_mixin.py:134
+#: openassessment/xblock/submission_mixin.py:135
 msgid "To submit a response, view this component in Preview or Live mode."
-msgstr "Aby przesłać odpowiedź, wyświetl ten element w podglądzie lub trybie na żywo."
+msgstr ""
+"Aby przesłać odpowiedź, wyświetl ten element w podglądzie lub w wersji "
+"opublikowanej"
 
-#: openassessment/xblock/submission_mixin.py:140
+#: openassessment/xblock/submission_mixin.py:141
 msgid "Multiple submissions are not allowed."
 msgstr "Przesyłanie więcej niż jednego zgłoszenia jest niedozwolone."
 
-#: openassessment/xblock/submission_mixin.py:184
+#: openassessment/xblock/submission_mixin.py:185
 msgid "API returned unclassified exception."
 msgstr "API zwróciło nieklasyfikowany wyjątek."
 
-#: openassessment/xblock/submission_mixin.py:235
+#: openassessment/xblock/submission_mixin.py:236
 msgid "This response could not be saved."
 msgstr "Nie udało się zapisać tej odpowiedzi."
 
-#: openassessment/xblock/submission_mixin.py:239
+#: openassessment/xblock/submission_mixin.py:240
 msgid "This response was not submitted."
 msgstr "Nie udało się przesłać tej odpowiedzi."
 
-#: openassessment/xblock/submission_mixin.py:255
+#: openassessment/xblock/submission_mixin.py:256
 msgid "Files descriptions were not submitted."
 msgstr "Nie udało się przesłać opisów plików."
 
-#: openassessment/xblock/submission_mixin.py:292
+#: openassessment/xblock/submission_mixin.py:293
 msgid "Files metadata could not be saved."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:415
+#: openassessment/xblock/submission_mixin.py:418
 msgid "There was an error uploading your file."
 msgstr "Wystąpił błąd w trakcie przesyłania twojego pliku."
 
-#: openassessment/xblock/submission_mixin.py:427
+#: openassessment/xblock/submission_mixin.py:430
 msgid "Only a single file upload is allowed for this assessment."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:438
+#: openassessment/xblock/submission_mixin.py:441
 msgid ""
 "File upload failed: unsupported file type.Only the supported file types can "
 "be uploaded.If you have questions, please reach out to the course team."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:451
+#: openassessment/xblock/submission_mixin.py:454
 msgid "Error retrieving upload URL."
 msgstr "Błąd w trakcie uzyskiwania adresu URL przesłanego pliku."
 
-#: openassessment/xblock/submission_mixin.py:732
+#: openassessment/xblock/submission_mixin.py:735
 msgid "This response has been saved but not submitted."
 msgstr "Ta odpowiedź została zapisania, lecz nie została wysłana."
 
-#: openassessment/xblock/submission_mixin.py:733
+#: openassessment/xblock/submission_mixin.py:736
 msgid "This response has not been saved."
 msgstr "Ta odpowiedź nie została zapisana."
 
@@ -2362,29 +2779,41 @@ msgstr "Wybrana przez ciebie kolejność oceniania jest nieprawidłowa."
 
 #: openassessment/xblock/validation.py:131
 msgid "In peer assessment, the \"Must Grade\" value must be a positive integer."
-msgstr "W zadaniu z oceną wzajemną wartość pola \"Liczba prac do ocenienia\" musi być liczbą dodatnią."
+msgstr ""
+"W zadaniu z oceną wzajemną wartość pola \"Liczba prac do ocenienia\" musi "
+"być liczbą dodatnią."
 
 #: openassessment/xblock/validation.py:134
 msgid "In peer assessment, the \"Graded By\" value must be a positive integer."
-msgstr "W zadaniu z oceną wzajemną wartość pola \"Liczba oceniających\" musi być liczbą dodatnią."
+msgstr ""
+"W zadaniu z oceną wzajemną wartość pola \"Liczba oceniających\" musi być "
+"liczbą dodatnią."
 
 #: openassessment/xblock/validation.py:138
 msgid ""
 "In peer assessment, the \"Must Grade\" value must be greater than or equal "
 "to the \"Graded By\" value."
-msgstr "W zadaniu z oceną wzajemną, wartość pola \"Liczba prac do ocenienia\" musi być większa bądź równa wartości pola \"Liczba oceniających\"."
+msgstr ""
+"W zadaniu z oceną wzajemną, wartość pola \"Liczba prac do ocenienia\" musi "
+"być większa bądź równa wartości pola \"Liczba oceniających\"."
 
 #: openassessment/xblock/validation.py:147
 msgid "You must provide at least one example response for learner training."
-msgstr "Musisz podać co najmniej jedną przykładową odpowiedź dla potrzeb szkolenia studenta."
+msgstr ""
+"Musisz podać co najmniej jedną przykładową odpowiedź dla potrzeb szkolenia "
+"studenta."
 
 #: openassessment/xblock/validation.py:150
 msgid "Each example response for learner training must be unique."
-msgstr "Każda przykładowa odpowiedź dla potrzeb szkolenia studenta musi być unikalna."
+msgstr ""
+"Każda przykładowa odpowiedź dla potrzeb szkolenia studenta musi być "
+"unikalna."
 
 #: openassessment/xblock/validation.py:157
 msgid "The \"required\" value must be true if staff assessment is the only step."
-msgstr "Wartość \"wymagana\" ustawiona na \"tak\" jest niezbędna jeśli ocena przez kadrę jest jedynym etapem."
+msgstr ""
+"Wartość \"wymagana\" ustawiona na \"tak\" jest niezbędna jeśli ocena przez "
+"kadrę jest jedynym etapem."
 
 #: openassessment/xblock/validation.py:161
 msgid ""
@@ -2404,7 +2833,9 @@ msgstr "Definicja szablonu jest nieprawidłowa."
 #: openassessment/xblock/validation.py:195
 #, python-brace-format
 msgid "Options in '{criterion}' have duplicate name(s): {duplicates}"
-msgstr "Opcje dla kryterium '{criterion}' posiadają zduplikowane nazwy (lub nazwę): {duplicates}"
+msgstr ""
+"Opcje dla kryterium '{criterion}' posiadają zduplikowane nazwy (lub nazwę): "
+"{duplicates}"
 
 #: openassessment/xblock/validation.py:203
 msgid "Criteria with no options must require written feedback."
