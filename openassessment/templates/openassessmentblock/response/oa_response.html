@@ -117,9 +117,9 @@
                                 <article class="submission__answer__part__prompt">
                                     <div class="submission__answer__part__prompt__copy">
                                         {% if prompts_type == 'html' %}
-                                            {{ part.prompt.description|safe }}
+                                            {% trans part.prompt.description|safe %}
                                         {% else %}
-                                            {{ part.prompt.description|linebreaks }}
+                                            {% trans part.prompt.description|linebreaks %}
                                         {% endif %}
                                     </div>
                                 </article>
@@ -223,7 +223,7 @@
                         {% endif %}
                         {% if file_upload_type %}
                           <h5 class="submission__upload__files__title">
-                            {% trans "File Uploads " %} 
+                            {% trans "File Uploads " %}
                             {% if file_upload_response == "required" %}
                               {% trans "(Required)" %}
                             {% elif file_upload_response == "optional" %}

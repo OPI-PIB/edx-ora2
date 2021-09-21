@@ -18,7 +18,7 @@
                         <input
                             class="openassessment_criterion_label input setting-input"
                             type="text"
-                            value="{{ criterion_label }}"
+                            value="{% trans criterion_label %}"
                         >
                     </label>
                 </div>
@@ -27,7 +27,7 @@
                 <div class="wrapper-comp-settings">
                     <label class="openassessment_criterion_prompt_label setting-label">
                         {% trans "Criterion Prompt" %}
-                        <textarea class="openassessment_criterion_prompt setting-input" maxlength="10000">{{ criterion_prompt }}</textarea>
+                        <textarea class="openassessment_criterion_prompt setting-input" maxlength="10000">{% trans criterion_prompt %}</textarea>
                     </label>
                 </div>
             </li>

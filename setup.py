@@ -36,11 +36,11 @@ def load_requirements(*requirements_paths):
 
 setup(
     name='ora2',
-    version='2.11.5.1.1',
+    version='2.0.0',
     author='edX',
     author_email='oscm@edx.org',
     url='http://github.com/edx/edx-ora2',
-    description='edx-ora2',
+    description='navoica-edx-ora2',
     license='AGPL',
     long_description=README,
     long_description_content_type='text/x-rst',
