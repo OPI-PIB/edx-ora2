@@ -28,7 +28,7 @@
             <ol class="openassessment_training_example_essay">
                 {% for part in example.answer.parts %}
                     <li class="openassessment_training_example_essay_part">
-                        <textarea maxlength="100000">{{ part.text }}</textarea>
+                        <textarea maxlength="100000">{% trans part.text %}</textarea>
                     </li>
                 {% endfor %}
             </ol>
