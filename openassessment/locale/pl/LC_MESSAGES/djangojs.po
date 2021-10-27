@@ -7,14 +7,15 @@
 # Translators:
 # krystianlygas <krystian.lygas@gmail.com>, 2021
 # Maciej Kolankowski <maciej.kolankowski@opi.org.pl>, 2021
+# Emilia Dolega <emilia.dolega@opi.org.pl>, 2021
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: edx-ora2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-16 07:03-0400\n"
+"POT-Creation-Date: 2021-09-21 07:18-0400\n"
 "PO-Revision-Date: 2021-08-09 12:51+0000\n"
-"Last-Translator: Maciej Kolankowski <maciej.kolankowski@opi.org.pl>, 2021\n"
+"Last-Translator: Emilia Dolega <emilia.dolega@opi.org.pl>, 2021\n"
 "Language-Team: Polish (https://www.transifex.com/navoica/teams/104253/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -116,25 +117,25 @@ msgstr "Zgłoszenie nie może zostać usunięte z puli oceniania."
 #: openassessment/xblock/static/js/openassessment-studio.js:1
 #: openassessment/xblock/static/js/src/oa_server.js:677
 msgid "Multiple teams returned for course"
-msgstr ""
+msgstr "Wiele zespołów w kursie"
 
 #: openassessment/xblock/static/js/openassessment-lms.js:3
 #: openassessment/xblock/static/js/openassessment-studio.js:1
 #: openassessment/xblock/static/js/src/oa_server.js:684
 msgid "Could not load teams information."
-msgstr ""
+msgstr "Nie udało się wczytać informacji o zespołach."
 
 #: openassessment/xblock/static/js/openassessment-lms.js:3
 #: openassessment/xblock/static/js/openassessment-studio.js:1
 #: openassessment/xblock/static/js/src/oa_server.js:706
 msgid "User lookup failed"
-msgstr ""
+msgstr "Wyszukiwanie użytkownika nie powiodło się"
 
 #: openassessment/xblock/static/js/openassessment-lms.js:3
 #: openassessment/xblock/static/js/openassessment-studio.js:1
 #: openassessment/xblock/static/js/src/oa_server.js:711
 msgid "Error when looking up username"
-msgstr ""
+msgstr "Błąd podczas wyszukiwania nazwy użytkownika"
 
 #: openassessment/xblock/static/js/openassessment-lms.js:304
 #: openassessment/xblock/static/js/src/lms/oa_course_items_listing.js:50
@@ -221,7 +222,7 @@ msgstr "Powrót do pełnej listy"
 
 #: openassessment/xblock/static/js/openassessment-lms.js:317
 msgid "Your file "
-msgstr ""
+msgstr "Twój plik"
 
 #: openassessment/xblock/static/js/openassessment-lms.js:317
 #: openassessment/xblock/static/js/src/lms/oa_response.js:343
@@ -268,7 +269,7 @@ msgstr ""
 #: openassessment/xblock/static/js/openassessment-lms.js:317
 #: openassessment/xblock/static/js/src/lms/oa_response.js:594
 msgid "Individual file size must be {max_files_mb}MB or less."
-msgstr ""
+msgstr "Rozmiar pojedynczego pliku musi wynosić {max_files_mb} MB lub mniej."
 
 #: openassessment/xblock/static/js/openassessment-lms.js:317
 #: openassessment/xblock/static/js/src/lms/oa_response.js:608
@@ -276,10 +277,13 @@ msgid ""
 "File upload failed: unsupported file type. Only the supported file types can"
 " be uploaded. If you have questions, please reach out to the course team."
 msgstr ""
+"Przesyłanie pliku nie powiodło się: nieobsługiwane rozszerzenie pliku. Można"
+" przesyłać tylko akceptowane rozszerzenia plików. Jeśli masz pytania, "
+"skontaktuj się z zespołem kursu."
 
 #: openassessment/xblock/static/js/openassessment-lms.js:317
 msgid "Only "
-msgstr ""
+msgstr "Wyłącznie"
 
 #: openassessment/xblock/static/js/openassessment-lms.js:317
 #: openassessment/xblock/static/js/src/lms/oa_response.js:691
@@ -303,6 +307,8 @@ msgid ""
 "Are you sure you want to delete the following file? It cannot be restored.\n"
 "File: "
 msgstr ""
+"Czy na pewno chcesz usunąć następujący plik? Nie można go przywrócić.\n"
+"Plik:"
 
 #: openassessment/xblock/static/js/openassessment-lms.js:317
 #: openassessment/xblock/static/js/src/lms/oa_self.js:124
@@ -330,6 +336,8 @@ msgid ""
 "This grade will be applied to all members of the team. Do you want to "
 "continue?"
 msgstr ""
+"Ta ocena zostanie przyznana wszystkim członkom zespołu. Czy chcesz "
+"kontynuować?"
 
 #: openassessment/xblock/static/js/openassessment-lms.js:317
 #: openassessment/xblock/static/js/src/lms/oa_staff_area.js:285
