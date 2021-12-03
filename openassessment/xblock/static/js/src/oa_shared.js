@@ -13,7 +13,7 @@ if (typeof window.gettext === 'undefined') {
 }
 
 // If ngettext isn't found (workbench, testing, etc.), return the simplistic english version
-if (typeof window.ngetgext === 'undefined') {
+if (typeof window.ngettext === 'undefined') {
   window.ngettext = function (singularText, pluralText, n) {
     if (n > 1) {
       return pluralText;
