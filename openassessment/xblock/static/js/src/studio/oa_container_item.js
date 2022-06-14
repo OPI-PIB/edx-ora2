@@ -446,6 +446,7 @@ export class RubricCriterion {
       containerItemClass: 'openassessment_criterion_option',
       notifier: this.notifier,
     });
+    this.feedbackSel = $('.openassessment_criterion_feedback', this.element);
   }
 
   /**
@@ -525,15 +526,15 @@ export class RubricCriterion {
   }
 
   /**
-     Get the feedback value for the criterion.
+     Get or set the feedback value for the criterion.
      This is one of: "disabled", "optional", or "required".
 
      Returns:
      string
 
      * */
-  feedback() {
-    return $('.openassessment_criterion_feedback', this.element).val();
+  feedback(feedback) {
+    return Fields.selectField(this.feedbackSel, feedback);
   }
 
   /**
@@ -593,6 +594,7 @@ export class RubricCriterion {
 
     if (!isValid) {
       this.promptSel.addClass('openassessment_highlighted_field');
+      this.promptSel.attr('aria-invalid', true);
     }
 
     // All options must be valid
@@ -632,6 +634,7 @@ export class RubricCriterion {
   clearValidationErrors() {
     // Clear criterion prompt errors
     this.promptSel.removeClass('openassessment_highlighted_field');
+    this.promptSel.removeAttr('aria-invalid');
 
     // Clear option errors
     $.each(this.optionContainer.getAllItems(), function () {
@@ -712,6 +715,7 @@ export class TrainingExample {
 
         if (!isOptionValid) {
           $(this).addClass('openassessment_highlighted_field');
+          $(this).attr('aria-invalid', true);
         }
       },
     );
@@ -749,7 +753,10 @@ export class TrainingExample {
      * */
   clearValidationErrors() {
     this.criteria.each(
-      function () { $(this).removeClass('openassessment_highlighted_field'); },
+      function () {
+        $(this).removeClass('openassessment_highlighted_field');
+        $(this).removeAttr('aria-invalid');
+      },
     );
   }
 }

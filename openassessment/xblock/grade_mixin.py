@@ -5,10 +5,11 @@ Grade step in the OpenAssessment XBlock.
 
 import copy
 
-from django.utils.translation import ugettext as _
-
 from lazy import lazy
 from xblock.core import XBlock
+
+from django.utils.translation import gettext as _
+
 from openassessment.assessment.errors import PeerAssessmentError, SelfAssessmentError
 
 from .data_conversion import create_submission_dict
@@ -73,7 +74,7 @@ class GradeMixin:
             else:  # status is 'self' or 'peer', which implies that the workflow is incomplete
                 path, context = self.render_grade_incomplete(workflow)
         except (sub_api.SubmissionError, PeerAssessmentError, SelfAssessmentError):
-            return self.render_error(self._(u"An unexpected error occurred."))
+            return self.render_error(self._("An unexpected error occurred."))
         else:
             return self.render_assessment(path, context)
 
@@ -88,10 +89,11 @@ class GradeMixin:
             tuple of context (dict), template_path (string)
         """
         # Import is placed here to avoid model import at project startup.
+        from submissions import api as sub_api
+
         from openassessment.assessment.api import peer as peer_api
         from openassessment.assessment.api import self as self_api
         from openassessment.assessment.api import staff as staff_api
-        from submissions import api as sub_api
 
         # Peer specific stuff...
         assessment_steps = self.assessment_steps
@@ -202,8 +204,8 @@ class GradeMixin:
         # Import is placed here to avoid model import at project startup.
         from openassessment.assessment.api import peer as peer_api
 
-        feedback_text = data.get('feedback_text', u'')
-        feedback_options = data.get('feedback_options', list())
+        feedback_text = data.get('feedback_text', '')
+        feedback_options = data.get('feedback_options', [])
 
         try:
             peer_api.set_assessment_feedback({
@@ -212,7 +214,7 @@ class GradeMixin:
                 'options': feedback_options,
             })
         except (peer_api.PeerAssessmentInternalError, peer_api.PeerAssessmentRequestError):
-            return {'success': False, 'msg': self._(u"Assessment feedback could not be saved.")}
+            return {'success': False, 'msg': self._("Assessment feedback could not be saved.")}
         else:
             self.runtime.publish(
                 self,
@@ -223,7 +225,7 @@ class GradeMixin:
                     'options': feedback_options,
                 }
             )
-            return {'success': True, 'msg': self._(u"Feedback saved.")}
+            return {'success': True, 'msg': self._("Feedback saved.")}
 
     def grade_details(
             self, submission_uuid, peer_assessments, self_assessment, staff_assessment,
@@ -368,8 +370,8 @@ class GradeMixin:
                 'option': self._peer_median_option(submission_uuid, criterion),
                 'individual_assessments': [
                     _get_assessment_part(
-                        _(u'Peer {peer_index}').format(peer_index=index + 1),
-                        _(u'Peer Comments'),
+                        _('Peer {peer_index}').format(peer_index=index + 1),
+                        _('Peer Comments'),
                         criterion_name,
                         peer_assessment
                     )
@@ -481,7 +483,7 @@ class GradeMixin:
         if len(options) == 1:
             return options[0]
         return {
-            'label': u' / '.join([option['label'] for option in options]),
+            'label': ' / '.join([option['label'] for option in options]),
             'points': median_score if median_score != -1 else None,
             'explanation': None,
         }
@@ -510,7 +512,7 @@ class GradeMixin:
             individual_feedback = []
             for peer_index, peer_assessment in enumerate(peer_assessments):
                 individual_feedback.append({
-                    'title': _(u'Peer {peer_index}').format(peer_index=peer_index + 1),
+                    'title': _('Peer {peer_index}').format(peer_index=peer_index + 1),
                     'feedback': peer_assessment.get('feedback')
                 })
             if any(assessment_feedback['feedback'] for assessment_feedback in individual_feedback):
@@ -626,7 +628,7 @@ class GradeMixin:
             if _assessment_type == "staff":
                 continue
 
-            if "{}-assessment".format(_assessment_type) in self.assessment_steps:
+            if f"{_assessment_type}-assessment" in self.assessment_steps:
                 return _assessment_type
 
         return None  # Just to make pylint happy
@@ -668,4 +670,58 @@ class GradeMixin:
                     "You have not yet received all necessary peer reviews to determine your final grade."
                 )
 
-        return "{} {}".format(first_sentence, second_sentence).strip()
+        return f"{first_sentence} {second_sentence}".strip()
+
+    def generate_report_data(self, user_state_iterator, limit_responses=None):
+        """
+        Return a list of student responses and assessments for this block in a readable way.
+
+        Arguments:
+            user_state_iterator: iterator over UserStateClient objects.
+                E.g. the result of user_state_client.iter_all_for_block(block_key)
+            limit_responses (int|None): maximum number of responses to include.
+                Set to None (default) to include all.
+        Returns:
+            each call yields a tuple like:
+                ("my_username", {
+                    'Submission ID': 'c6551...',
+                    'Item ID': 5,
+                    'Anonymized Student ID': 'c801..',
+                    'Assessment ID': 4,
+                    'Assessment Scored Date': '2020-02-01',
+                    'Assessment Scored Time': '10:03:07.218280+00:00',
+                    'Assessment Type': 'PE',
+                    'Anonymous Scorer Id': '6e9a...',
+                    'Criterion 1: Ideas": 'Poor',
+                    'Points 1': 0,
+                    'Median Score 1': 0,
+                    'Feedback 1': 'Does not answer the question.',
+                    'Criterion 2: Content": 'Excellent',
+                    'Points 2': 3,
+                    'Median Score 2': 3.0,
+                    'Feedback 2': 'Well described.',
+                    'Criteria Count': 'Well described.',
+                    'Overall Feedback': 'try again',
+                    'Date/Time Final Score Given': 2020-02-01 10:03:07.218280+00:00',,
+                    'Final Score Points Earned': 1,
+                    'Final Score Points Possible': 5,
+                    'Feedback Statements Selected': "",
+                    'Feedback on Assessment': "",
+                    'Response files': 'http://lms.url/...',
+                    'Response': '{"file_descriptions"...}',
+                    'Assessment scored At': 2020-02-01 10:03:07.218280+00:00',,
+                })
+        """
+        from openassessment.data import OraAggregateData
+
+        xblock_id = self.get_xblock_id()
+        num_rows = 0
+        for user_state in user_state_iterator:
+            submission_uuid = user_state.state.get('submission_uuid')
+            for row in OraAggregateData.generate_assessment_data(xblock_id, submission_uuid):
+                num_rows += 1
+                yield (user_state.username, row)
+
+            if limit_responses is not None and num_rows >= limit_responses:
+                # End the iterator here
+                break

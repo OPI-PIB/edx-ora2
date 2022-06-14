@@ -1,22 +1,22 @@
 """
 Tests the Open Assessment XBlock functionality.
 """
-
-
 from collections import namedtuple
 import datetime as dt
 from io import StringIO
 import json
+from unittest import mock
+from unittest.mock import MagicMock, Mock, PropertyMock, patch
+from django.test.utils import override_settings
 
 import ddt
-from mock import MagicMock, Mock, PropertyMock, patch
 import pytz
 
 from freezegun import freeze_time
 from lxml import etree
 from openassessment.workflow.errors import AssessmentWorkflowError
 from openassessment.xblock import openassessmentblock
-from openassessment.xblock.resolve_dates import DISTANT_FUTURE, DISTANT_PAST
+from openassessment.xblock.resolve_dates import DateValidationError, DISTANT_FUTURE, DISTANT_PAST
 
 from .base import XBlockHandlerTestCase, scenario
 
@@ -157,6 +157,13 @@ class TestOpenAssessment(XBlockHandlerTestCase):
         self.assertEqual(models[1], UI_MODELS["grade"])
 
     @scenario('data/basic_scenario.xml')
+    @override_settings(
+        ORA_GRADING_MICROFRONTEND_URL='some_url'
+    )
+    @patch(
+        'openassessment.xblock.config_mixin.ConfigMixin.is_enhanced_staff_grader_enabled',
+        PropertyMock(return_value=False)
+    )
     def test_ora_blocks_listing_view(self, xblock):
         """
         Test view for listing all courses OA blocks.
@@ -203,13 +210,40 @@ class TestOpenAssessment(XBlockHandlerTestCase):
         items = json.loads(scripts[0].text)
         self.assertEqual(items, defined_ora_items)
 
+    @scenario('data/basic_scenario.xml')
+    @override_settings(
+        ORA_GRADING_MICROFRONTEND_URL='some_url'
+    )
+    @ddt.data(False, True)
+    @patch(
+        'openassessment.xblock.config_mixin.ConfigMixin.is_enhanced_staff_grader_enabled',
+        new_callable=PropertyMock
+    )
+    def test_ora_blocks_listing_view_include_esg_flag(self, xblock, esg_flag_input, mock_esg):
+        """
+        Test view for listing all courses OA blocks.
+        """
+        mock_esg.return_value = esg_flag_input
+        xblock_fragment = self.runtime.render(xblock, "ora_blocks_listing_view")
+        body_html = xblock_fragment.body_html()
+
+        self.assertIn("CourseOpenResponsesListingBlock", body_html)
+
+        parser = etree.HTMLParser()
+        tree = etree.parse(StringIO(body_html), parser)
+
+        xblock_arg_path = "//script[contains(@type, 'json/xblock-args')]"
+
+        xblock_args_el = tree.xpath(xblock_arg_path)
+        json.loads(xblock_args_el[0].text)['CONTEXT']['ENHANCED_STAFF_GRADER'] = esg_flag_input
+
     @scenario('data/empty_prompt.xml')
     def test_prompt_intentionally_empty(self, xblock):
         # Verify that prompts intentionally left empty don't create DOM elements
         xblock_fragment = self.runtime.render(xblock, "student_view")
         body_html = xblock_fragment.body_html()
         present_prompt_text = "you'll provide a response to the prompt"
-        missing_article = u'<article class="submission__answer__part__prompt'
+        missing_article = '<article class="submission__answer__part__prompt'
         self.assertIn(present_prompt_text, body_html)
         self.assertNotIn(missing_article, body_html)
 
@@ -228,7 +262,7 @@ class TestOpenAssessment(XBlockHandlerTestCase):
         with patch('openassessment.xblock.workflow_mixin.workflow_api') as mock_api:
             self.runtime.render(xblock, "student_view")
             expected_reqs = {
-                "peer": {"must_grade": 5, "must_be_graded_by": 3}
+                "peer": {"must_grade": 5, "must_be_graded_by": 3, "enable_flexible_grading": False}
             }
             mock_api.update_from_assessments.assert_called_once_with('test_submission', expected_reqs)
 
@@ -480,17 +514,52 @@ class TestOpenAssessment(XBlockHandlerTestCase):
         # Check that we can render the student view without error
         self.runtime.render(xblock, 'student_view')
 
+    @scenario('data/grade_scenario_self_staff.xml', user_id='Bob')
+    def test_assessment_type_with_staff(self, xblock):
+        # Check that staff-assessment is in assessment_steps
+        self.assertIn('staff-assessment', xblock.assessment_steps)
+
+        # Check that we can render the student view without error
+        self.runtime.render(xblock, 'student_view')
+
+    @scenario('data/grade_scenario_self_only.xml', user_id='Bob')
+    def test_assessment_type_without_staff(self, xblock):
+        # Check that staff-assessment is not in assessment_steps
+        self.assertNotIn('staff-assessment', xblock.assessment_steps)
+
+        # Check that we can render the student view without error
+        self.runtime.render(xblock, 'student_view')
+
+    @scenario('data/grade_scenario_self_staff_not_required.xml', user_id='Bob')
+    def test_assessment_type_with_staff_not_required(self, xblock):
+        # Check that staff-assessment is not in assessment_steps
+        self.assertNotIn('staff-assessment', xblock.assessment_steps)
+
+        # Check that we can render the student view without error
+        self.runtime.render(xblock, 'student_view')
+
+    @scenario('data/grade_scenario_self_staff_not_required.xml', user_id='Bob')
+    def test_assessment_type_with_staff_override(self, xblock):
+        # Override the staff_assessment_exists function to always return True
+        xblock.staff_assessment_exists = lambda submission_uuid: True
+
+        # Check that staff-assessment is in assessment_steps
+        self.assertIn('staff-assessment', xblock.assessment_steps)
+
+        # Check that we can render the student view without error
+        self.runtime.render(xblock, 'student_view')
+
     @scenario('data/basic_scenario.xml', user_id='Bob')
     def test_prompts_fields(self, xblock):
 
         self.assertEqual(xblock.prompts, [
             {
-                'description': (u'Given the state of the world today, what do you think should be done to '
-                                u'combat poverty? Please answer in a short essay of 200-300 words.')
+                'description': ('Given the state of the world today, what do you think should be done to '
+                                'combat poverty? Please answer in a short essay of 200-300 words.')
             },
             {
-                'description': (u'Given the state of the world today, what do you think should be done to '
-                                u'combat pollution?')
+                'description': ('Given the state of the world today, what do you think should be done to '
+                                'combat pollution?')
             }
         ])
 
@@ -811,6 +880,18 @@ class TestDates(XBlockHandlerTestCase):
     def test_is_released_course_staff(self, xblock):
         # Simulate being course staff
         xblock.xmodule_runtime = Mock(user_is_staff=True)
+
+        # Published, should be released
+        self.assertTrue(xblock.is_released())
+
+        # Not published, should be not released
+        xblock.runtime.modulestore = MagicMock()
+        xblock.runtime.modulestore.has_published_version.return_value = False
+        self.assertFalse(xblock.is_released())
+
+    @scenario('data/basic_scenario.xml')
+    def test_is_released_invalid_date(self, xblock):
+        xblock.is_closed = mock.MagicMock(side_effect=DateValidationError)
 
         # Published, should be released
         self.assertTrue(xblock.is_released())

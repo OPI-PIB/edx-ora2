@@ -21,8 +21,8 @@ Returns:
 * */
 export class EditSettingsView {
   constructor(element, assessmentViews, data) {
-    const self = this;
     this.settingsElement = element;
+    this.tabElement = $('#oa_edit_settings_tab');
     this.assessmentViews = assessmentViews;
     this.data = data;
 
@@ -30,6 +30,7 @@ export class EditSettingsView {
     this.onTeamsEnabledChange = this.onTeamsEnabledChange.bind(this);
     this.displayName = this.displayName.bind(this);
     this.textResponseNecessity = this.textResponseNecessity.bind(this);
+    this.textResponseEditor = this.textResponseEditor.bind(this);
     this.fileUploadResponseNecessity = this.fileUploadResponseNecessity.bind(this);
     this.fileUploadType = this.fileUploadType.bind(this);
     this.fileTypeWhiteList = this.fileTypeWhiteList.bind(this);
@@ -107,6 +108,10 @@ export class EditSettingsView {
     this.onTeamsEnabledChange($('#openassessment_team_enabled_selector').val());
   }
 
+  getTab() {
+    return this.tabElement;
+  }
+
   /**
    * When file upload type is changed, show the corresponding extensions that will be
    * allowed for upload
@@ -121,6 +126,8 @@ export class EditSettingsView {
       '#openassessment_submission_white_listed_file_types_wrapper .extension-warning',
       this.element,
     );
+
+    this.fileTypeWhiteListInputField.clearValidationErrors();
 
     if (selectedValue === 'custom') {
       // Enable the "allowed file types" field and hide the note banner
@@ -212,6 +219,23 @@ export class EditSettingsView {
      */
   textResponseNecessity(value) {
     const sel = $('#openassessment_submission_text_response', this.settingsElement);
+    if (value !== undefined) {
+      sel.val(value);
+    }
+    return sel.val();
+  }
+
+  /**
+     Get or set response editor.
+
+    Args:
+        value (string, optional): If provided, set text response necessity.
+
+    Returns:
+        string: One of available response editors
+     */
+  textResponseEditor(value) {
+    const sel = $('#openassessment_submission_text_response_editor', this.settingsElement);
     if (value !== undefined) {
       sel.val(value);
     }
@@ -405,6 +429,18 @@ export class EditSettingsView {
       this.leaderboardIntField.set(num);
     }
     return this.leaderboardIntField.get(num);
+  }
+
+  /**
+    Enable / disable showing learners the assessment rubric while working on their response.
+
+    Args:
+        isEnabled(boolean, optional): if provided enable/disable showing the rubric
+    Returns:
+        boolean
+     * */
+  showRubricDuringResponse(isEnabled) {
+    return this.settingSelectorEnabled('#openassessment_show_rubric_during_response_selector', isEnabled);
   }
 
   /**

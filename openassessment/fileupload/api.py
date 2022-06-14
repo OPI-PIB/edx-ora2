@@ -35,7 +35,7 @@ def get_download_url(key):
     """
     url = backends.get_backend().get_download_url(key)
     if not url:
-        logger.warning('FileUploadError: Could not retrieve URL for key {}'.format(key))
+        logger.warning('FileUploadError: Could not retrieve URL for key %s', key)
     return url
 
 
@@ -88,7 +88,7 @@ def can_delete_file(current_user_id, teams_enabled, key, team_id=None, shared_fi
         try:
             shared_file = SharedFileUpload.by_key(key)
         except SharedFileUpload.DoesNotExist:
-            logger.info('While checking ORA file-deletion ability, could not find file with key: {}'.format(key))
+            logger.info('While checking ORA file-deletion ability, could not find file with key: %s', key)
             return True
 
     if shared_file.owner_id != current_user_id:
@@ -122,10 +122,9 @@ def _safe_load_json_list(field, log_error=False):
         return json.loads(field)
     except ValueError:
         if log_error:
-            logger.exception("URLWorkaround: Safe Load failed for data field:{field} with type:{type}".format(
-                field=field,
-                type=type(field)
-            ))
+            logger.exception(
+                "URLWorkaround: Safe Load failed for data field:%s with type:%s", field, type(field)
+            )
         return []
 
 
@@ -169,10 +168,12 @@ class FileUpload:
             try:
                 return get_download_url(self.key)
             except FileUploadError as exc:
-                logger.exception(u'FileUploadError: URL retrieval failed for key {key} with error {error}'.format(
-                    key=self.key,
-                    error=exc
-                ))
+                logger.exception(
+                    'FileUploadError: URL retrieval failed for key %s with error %s',
+                    self.key,
+                    exc,
+                    exc_info=True,
+                )
                 return ''
         return None
 
@@ -210,9 +211,15 @@ class FileUpload:
         """
         return self._to_dict() == other._to_dict()  # pylint: disable=protected-access
 
+    def __hash__(self):
+        """
+        Returns a hash of the FileUpload's dict representation
+        """
+        return hash(self._to_dict())
 
-FileDescriptor = namedtuple('FileDescriptor', ['download_url', 'description', 'name', 'show_delete_button'])
-TeamFileDescriptor = namedtuple('TeamFileDescriptor', ['download_url', 'description', 'name', 'uploaded_by'])
+
+FileDescriptor = namedtuple('FileDescriptor', ['download_url', 'description', 'name', 'size', 'show_delete_button'])
+TeamFileDescriptor = namedtuple('TeamFileDescriptor', ['download_url', 'description', 'name', 'size', 'uploaded_by'])
 
 
 class FileUploadManager:
@@ -235,7 +242,7 @@ class FileUploadManager:
     """
     def __init__(self, openassessment_xblock):
         self.block = openassessment_xblock
-        self.shared_uploads_for_team_by_key_cache = dict()
+        self.shared_uploads_for_team_by_key_cache = {}
 
     @cached_property
     def student_item_dict(self):
@@ -336,6 +343,7 @@ class FileUploadManager:
                 download_url=upload.download_url,
                 description=upload.description,
                 name=upload.name,
+                size=upload.size,
                 show_delete_button=show_delete_button,
             )._asdict())
 
@@ -351,6 +359,7 @@ class FileUploadManager:
                 download_url=upload.download_url,
                 description=upload.description,
                 name=upload.name,
+                size=upload.size,
                 uploaded_by=self.block.get_username(upload.student_id)
             )._asdict()
             for upload in self.get_team_uploads(team_id=team_id)
@@ -391,7 +400,7 @@ class FileUploadManager:
         if hasattr(self, 'shared_uploads_for_student_by_key'):
             del self.shared_uploads_for_student_by_key
 
-        self.shared_uploads_for_team_by_key_cache = dict()
+        self.shared_uploads_for_team_by_key_cache = {}
 
     def append_uploads(self, *new_uploads):
         """
@@ -412,10 +421,11 @@ class FileUploadManager:
                 sizes_to_add,
             ) = self._dicts_to_key_lists(new_uploads, required_keys)
         except FileUploadError as exc:
-            logging.exception(u"FileUploadError: Metadata save for {data} failed with error {error}".format(
-                error=exc,
-                data=new_uploads
-            ))
+            logging.exception(
+                "FileUploadError: Metadata save for %s failed with error %s",
+                exc,
+                new_uploads
+            )
             raise
 
         existing_file_descriptions, existing_file_names, existing_file_sizes = self._get_metadata_from_block()
@@ -494,7 +504,7 @@ class FileUploadManager:
             try:
                 SharedFileUpload.by_key(file_key).delete()
             except SharedFileUpload.DoesNotExist:
-                logger.warning('Could not find SharedFileUpload to delete: {}'.format(file_key))
+                logger.warning('Could not find SharedFileUpload to delete: %s', file_key)
 
         self.invalidate_cached_shared_file_dicts()
 
@@ -607,7 +617,7 @@ class FileUploadManager:
         for _dict in dicts:
             for key in required_keys:
                 if key not in _dict:
-                    raise FileUploadError('Missing required key {} in {}'.format(key, _dict))
+                    raise FileUploadError(f'Missing required key {key} in {_dict}')
                 result[key].append(_dict[key])
 
         return tuple(result[key] for key in required_keys)

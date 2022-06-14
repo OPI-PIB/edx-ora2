@@ -463,6 +463,7 @@ export class Server {
       assessments: options.assessments,
       editor_assessments_order: options.editorAssessmentsOrder,
       text_response: options.textResponse,
+      text_response_editor: options.textResponseEditor,
       file_upload_response: options.fileUploadResponse,
       file_upload_type: options.fileUploadType,
       white_listed_file_types: options.fileTypeWhiteList,
@@ -471,6 +472,7 @@ export class Server {
       leaderboard_show: options.leaderboardNum,
       teams_enabled: options.teamsEnabled,
       selected_teamset_id: options.selectedTeamsetId,
+      show_rubric_during_response: options.showRubricDuringResponse,
     });
     return $.Deferred((defer) => {
       $.ajax({
@@ -709,6 +711,30 @@ export class Server {
         }
       }).fail(function () {
         defer.rejectWith(this, [gettext('Error when looking up username')]);
+      });
+    });
+  }
+
+  /**
+   * Clone a rubric into ORA from an existing rubric
+   * @param {xblock-id} rubricLocation, xblock locator for ORA to clone rubric from
+   * @returns {promise} a JQuery Promise which will resolve with rubric data
+   */
+  cloneRubric(rubricLocation) {
+    const url = this.url('get_rubric');
+    const payload = { target_rubric_block_id: String(rubricLocation) };
+
+    return $.Deferred((defer) => {
+      $.ajax({
+        type: 'POST', url, data: JSON.stringify(payload), contentType: jsonContentType,
+      }).done(function (data) {
+        if (data.success) {
+          defer.resolveWith(this, [data.rubric]);
+        } else {
+          defer.rejectWith(this, [data.msg]);
+        }
+      }).fail(function () {
+        defer.rejectWith(this, [gettext('Failed to clone rubric')]);
       });
     });
   }

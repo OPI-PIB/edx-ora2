@@ -1,5 +1,5 @@
 export class CourseItemsListingView {
-  constructor(runtime, element) {
+  constructor(runtime, element, data) {
     const self = this;
     const $section = $(element);
     const block = $section.find('.open-response-assessment-block');
@@ -9,6 +9,7 @@ export class CourseItemsListingView {
     this.$section = $section;
     this.runtime = runtime;
     this.oraData = $.parseJSON($('#open-response-assessment-items').text());
+    this.data = data;
 
     if (!dataRendered) { // if rendered, we're returning after tabbing away
       $section.find('.open-response-assessment-content').hide();
@@ -16,16 +17,25 @@ export class CourseItemsListingView {
       $section.find('.open-response-assessment-msg').show();
     }
 
+    const context = this.data.CONTEXT || {};
+
     const AssessmentCell = Backgrid.UriCell.extend({
-      staff: false,
+      type: null,
+      url: null,
+      // Should be removed as a part of AU-617
+      shouldShowLink() {
+        return true;
+      },
       render() {
         this.$el.empty();
-        const url = this.model.get(this.staff ? 'url_grade_available_responses' : 'url_base');
-        const rawValue = this.model.get(this.column.get('name'));
-        const staffAssessment = this.model.get('staff_assessment');
+        const name = this.column.get('name');
+        this.$el.addClass(name);
+        const url = this.model.get(this.url ? this.url : 'url_base');
+        const rawValue = this.model.get(name);
         const formattedValue = this.formatter.fromRaw(rawValue, this.model);
+        const hasAssessmentType = this.model.get(this.type ? this.type : 'staff_assessment');
         let link = null;
-        if (itemViewEnabled && (!this.staff || (this.staff && staffAssessment))) {
+        if (itemViewEnabled && (!this.type || (this.type && hasAssessmentType)) && this.shouldShowLink()) {
           link = $('<a>', {
             text: formattedValue,
             title: this.title || formattedValue,
@@ -40,8 +50,45 @@ export class CourseItemsListingView {
       },
     });
 
+    const esgEnabled = context.ENHANCED_STAFF_GRADER;
+    const esgRootUrl = context.ORA_GRADING_MICROFRONTEND_URL;
+
+    const ESGCell = Backgrid.UriCell.extend({
+      render() {
+        this.$el.empty();
+        const name = this.column.get('name');
+        this.$el.addClass(name);
+        const displayValue = esgEnabled ? gettext('View and grade responses') : gettext('Demo the new Grading Experience');
+        const id = this.model.get('id');
+        const url = `${esgRootUrl}/${id}`;
+        const hasAssessmentType = this.model.get('staff_assessment');
+        const link = $('<a>', {
+          text: displayValue,
+          title: displayValue,
+          href: url,
+          class: 'staff-esg-link',
+        });
+        // Remove this in AU-617
+        const teamAssignment = this.model.get('team_assignment');
+        if (hasAssessmentType && !teamAssignment) {
+          this.$el.append(link);
+        }
+        return this;
+      },
+    });
+
+    const WaitingStepCell = AssessmentCell.extend({
+      type: 'peer_assessment',
+      url: 'url_waiting_step_details',
+    });
+
     const StaffCell = AssessmentCell.extend({
-      staff: true,
+      url: 'url_grade_available_responses',
+      type: 'staff_assessment',
+      // Should be removed as a part of AU-617
+      shouldShowLink() {
+        return this.model.get('team_assignment') || !esgEnabled;
+      },
     });
 
     this._columns = [
@@ -97,7 +144,7 @@ export class CourseItemsListingView {
         name: 'waiting',
         label: gettext('Waiting'),
         label_summary: gettext('Waiting'),
-        cell: 'string',
+        cell: WaitingStepCell,
         num: true,
         editable: false,
       },
@@ -114,6 +161,13 @@ export class CourseItemsListingView {
         label: gettext('Final Grade Received'),
         label_summary: gettext('Final Grade Received'),
         cell: 'string',
+        num: true,
+        editable: false,
+      },
+      {
+        name: 'staff_grader',
+        label: gettext('Staff Grader'),
+        cell: ESGCell,
         num: true,
         editable: false,
       },
@@ -194,6 +248,8 @@ export class CourseItemsListingView {
     $section.find('.open-response-assessment-summary').empty();
 
     $.each(this._columns, (index, v) => {
+      // if label_summary is undefined, do not show it
+      if (v.label_summary === undefined) { return; }
       summaryData.push({
         title: v.label_summary,
         value: 0,

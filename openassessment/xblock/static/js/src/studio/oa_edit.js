@@ -59,10 +59,7 @@ export class StudioView {
       new Notifier([
         studentTrainingListener,
       ]),
-    );
-
-    this.scheduleView = new EditScheduleView(
-      $('#oa_schedule_editor_wrapper', this.element).get(0),
+      this.server,
     );
 
     // Initialize the settings and assessments steps tab views
@@ -93,6 +90,20 @@ export class StudioView {
     this.settingsView = new EditSettingsView(
       $('#oa_basic_settings_editor', this.element).get(0), assessmentLookupDictionary, data,
     );
+
+    // Initialize the schedule tab
+    this.scheduleView = new EditScheduleView(
+      $('#oa_schedule_editor_wrapper', this.element).get(0), assessmentLookupDictionary,
+    );
+
+    // list all views in tab order for easy iteration, e.g. validation
+    this.views = [
+      this.promptsView,
+      this.rubricView,
+      this.scheduleView,
+      this.assessmentsStepsView,
+      this.settingsView,
+    ];
 
     // Install the save and cancel buttons
     $('.openassessment_save_button', this.element).click($.proxy(this.save, this));
@@ -160,12 +171,17 @@ export class StudioView {
     //
     // The `validate()` method calls `validate()` on any subviews,
     // so that each subview has the opportunity to validate
-    // its fields.
+    // its fields. It returns tabs which fail validation.
     this.clearValidationErrors();
-    if (!this.validate()) {
+    const viewsFailingValidation = this.validate();
+    this.markTabsWithValidationErrors(viewsFailingValidation);
+
+    if (viewsFailingValidation.length > 0) {
+      const tabNames = viewsFailingValidation.map(view => view.getTab().find('a').text());
+      const tabNamesCommaSeparated = tabNames.join(', ');
       this.alert.setMessage(
-        gettext('Couldn\'t Save This Assignment'),
-        gettext('Please correct the outlined fields.'),
+        gettext('Save Unsuccessful'),
+        gettext('Errors detected on the following tabs: ') + tabNamesCommaSeparated,
       ).show();
     } else {
       // At this point, we know that all fields are valid,
@@ -197,9 +213,11 @@ export class StudioView {
      executed if the user confirms the update.
      * */
   confirmPostReleaseUpdate(onConfirm) {
-    const msg = gettext('This problem has already been released. Any changes will apply only to future assessments.');
+    const msg = 'This ORA has already been released. '
+                + 'Changes will only affect learners making new submissions. '
+                + 'Existing submissions will not be modified by this change.';
     // TODO: classier confirm dialog
-    if (window.confirm(msg)) { onConfirm(); }
+    if (window.confirm(gettext(msg))) { onConfirm(); }
   }
 
   /**
@@ -224,6 +242,7 @@ export class StudioView {
       submissionDue: this.scheduleView.submissionDue(),
       assessments: this.assessmentsStepsView.assessmentsDescription(),
       textResponse: this.settingsView.textResponseNecessity(),
+      textResponseEditor: this.settingsView.textResponseEditor(),
       fileUploadResponse: this.settingsView.fileUploadResponseNecessity(),
       fileUploadType: fileUploadType !== '' ? fileUploadType : null,
       fileTypeWhiteList: this.settingsView.fileTypeWhiteList(),
@@ -233,6 +252,7 @@ export class StudioView {
       editorAssessmentsOrder: this.assessmentsStepsView.editorAssessmentsOrder(),
       teamsEnabled,
       selectedTeamsetId: this.settingsView.teamset(),
+      showRubricDuringResponse: this.settingsView.showRubricDuringResponse(),
     }).done(
       // Notify the client-side runtime that we finished saving
       // so it can hide the "Saving..." notification.
@@ -263,19 +283,48 @@ export class StudioView {
   }
 
   /**
-     Mark validation errors.
+     Perform validation on each view and determine views failing validation.
 
      Returns:
-     Boolean indicating whether the view is valid.
+     List of views failing validation or empty list
 
      * */
   validate() {
-    const settingsValid = this.settingsView.validate();
-    const assessmentsStepsValid = this.assessmentsStepsView.validate();
-    const scheduleValid = this.scheduleView.validate();
-    const rubricValid = this.rubricView.validate();
-    const promptsValid = this.promptsView.validate();
-    return settingsValid && assessmentsStepsValid && scheduleValid && rubricValid && promptsValid;
+    const viewsFailingValidation = [];
+
+    this.views.forEach((view) => {
+      if (!view.validate()) {
+        viewsFailingValidation.push(view);
+      }
+    });
+
+    return viewsFailingValidation;
+  }
+
+  /** Given a list of views failing validation, mark their tabs as invalid */
+  markTabsWithValidationErrors(viewsFailingValidation) {
+    viewsFailingValidation.forEach((view) => {
+      const tab = view.getTab();
+      const numErrors = view.validationErrors().length;
+      this.markTabAsInvalid(tab, numErrors);
+    });
+  }
+
+  /**
+   * Given a tab, add invalid warning markup
+   *  numErrors - number of errors (only shown in screen reader help-text)
+   * */
+  markTabAsInvalid(tab, numErrors) {
+    $('.tab-error-count', tab).text(gettext('error count: ') + numErrors);
+    $('.validation-warning', tab).show();
+  }
+
+  /**
+   * Given a tab, remove invalid warning markup
+   * */
+  clearTabValidation(tab) {
+    $('.tab-error-count', tab).text('');
+    $('.validation-warning', tab).hide();
   }
 
   /**
@@ -302,11 +351,10 @@ export class StudioView {
      Clear all validation errors from the UI.
      * */
   clearValidationErrors() {
-    this.settingsView.clearValidationErrors();
-    this.assessmentsStepsView.clearValidationErrors();
-    this.scheduleView.clearValidationErrors();
-    this.rubricView.clearValidationErrors();
-    this.promptsView.clearValidationErrors();
+    this.views.forEach((view) => {
+      view.clearValidationErrors();
+      this.clearTabValidation(view.getTab());
+    });
   }
 }
 
