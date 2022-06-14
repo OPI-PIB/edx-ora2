@@ -512,27 +512,18 @@ export class Server {
    * @param {string} contentType The Content Type for the file being uploaded.
    * @param {string} filename The name of the file to be uploaded.
    * @param {string} filenum The number of the file to be uploaded.
-   * @param {object} file File.
    * @returns {promise} A promise which resolves with a presigned upload URL from the
    * specified service used for uploading files on success, or with an error message
    * upon failure.
    */
-  getUploadUrl(contentType, filename, filenum, file) {
-    const formData = new FormData();
-    const objArr = [];
+  getUploadUrl(contentType, filename, filenum) {
     const url = this.url('upload_url');
-
-    objArr.push(JSON.stringify({ contentType, filename, filenum }));
-    formData.append('file', file);
-    formData.append('objArr', objArr);
-
     return $.Deferred((defer) => {
       $.ajax({
         type: 'POST',
         url,
-        data: formData,
-        contentType: false,
-        processData: false,
+        data: JSON.stringify({ contentType, filename, filenum }),
+        contentType: jsonContentType,
       }).done(function (data) {
         if (data.success) { defer.resolve(data.url); } else { defer.rejectWith(this, [data.msg]); }
       }).fail(function () {

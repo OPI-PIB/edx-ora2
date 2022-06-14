@@ -22,11 +22,11 @@ logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 KEY_SEPARATOR = '/'
 
 
-def get_upload_url(key, content_type, file):
+def get_upload_url(key, content_type):
     """
     Returns a url (absolute or relative, depending on the endpoint) which can be used to upload a file to.
     """
-    return backends.get_backend().get_upload_url(key, content_type, file)
+    return backends.get_backend().get_upload_url(key, content_type)
 
 
 def get_download_url(key):

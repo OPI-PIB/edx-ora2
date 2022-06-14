@@ -24,7 +24,6 @@ from .data_conversion import (
 from .resolve_dates import DISTANT_FUTURE
 from .user_data import get_user_preferences
 from .validation import validate_submission
-from webob import Response
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
@@ -453,7 +452,7 @@ class SubmissionMixin:
         anonymous_id = self.xmodule_runtime.anonymous_student_id
         return {'username': self.get_username(anonymous_id)}
 
-    @XBlock.handler
+    @XBlock.json_handler
     def upload_url(self, data, suffix=''):  # pylint: disable=unused-argument
         """
         Request a URL to be used for uploading content related to this
@@ -463,8 +462,6 @@ class SubmissionMixin:
             A URL to be used to upload content associated with this submission.
 
         """
-        file = data.POST['file'].file
-        data = json.loads(data.POST['objArr'])
         if 'contentType' not in data or 'filename' not in data:
             return {'success': False, 'msg': self._("There was an error uploading your file.")}
 
@@ -481,7 +478,7 @@ class SubmissionMixin:
                             'msg': self._("Only a single file upload is allowed for this assessment.")}
 
         file_num = int(data.get('filenum', 0))
-           
+
         _, file_ext = os.path.splitext(data['filename'])
         file_ext = file_ext.strip('.') if file_ext else None
         content_type = data['contentType']
@@ -498,8 +495,8 @@ class SubmissionMixin:
         file_num = int(data.get('filenum', 0))
         try:
             key = self._get_student_item_key(file_num)
-            url = file_upload_api.get_upload_url(key, content_type, file)
-            return Response(json.dumps({'success': True, 'url': url}), content_type='application/json', charset='UTF-8')
+            url = file_upload_api.get_upload_url(key, content_type)
+            return {'success': True, 'url': url}
         except FileUploadError:
             logger.exception("FileUploadError:Error retrieving upload URL for the data: %s.", data)
             return {'success': False, 'msg': self._("Error retrieving upload URL.")}
