@@ -88,6 +88,8 @@
               resolve();
             });
             $(this).tinymce(config);
+            window.tinyMCE.baseURL = `${baseUrl ?? '/'}navoica-theme/js/vendor/tinymce/js/tinymce`;
+            window.tinyMCE.suffix = '.min';
           });
         }));
       }
