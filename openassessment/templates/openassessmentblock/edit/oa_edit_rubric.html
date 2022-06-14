@@ -38,7 +38,7 @@
             <li class="field comp-setting-entry">
                 <div class="wrapper-comp-setting" id="openassessment_rubric_feedback_input_wrapper">
                     <label for="openassessment_rubric_feedback" class="setting-label">{% trans "Feedback Instructions" %}</label>
-                    <textarea id="openassessment_rubric_feedback" class="input setting-input">{% trans feedbackprompt %}</textarea>
+                    <textarea id="openassessment_rubric_feedback" class="input setting-input">{% if feedbackprompt %}{% trans feedbackprompt %}{% else %}{% trans 'No further instruction provided' %}{% endif %}</textarea>
                 </div>
                 <p class="setting-help">
                     {% trans "Encourage learners to provide feedback on the response they have graded. You can replace the sample text with your own." %}
