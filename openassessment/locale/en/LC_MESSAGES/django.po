@@ -8,8 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: edx-ora2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-10 08:54-0400\n"
-"POT-Creation-Date: 2021-09-21 07:18-0400\n"
+"POT-Creation-Date: 2022-06-14 11:06-0400\n"
 "PO-Revision-Date: 2014-06-04 15:41-0400\n"
 "Last-Translator: Muhammad Ayub khan <ayubkhan@edx.org>\n"
 "Language-Team: openedx-translation <openedx-translation@googlegroups.com>\n"
@@ -2188,7 +2187,7 @@ msgstr ""
 msgid "You must provide feedback for criteria in the assessment."
 msgstr ""
 
-#: openassessment/xblock/defaults.py:6
+#: openassessment/xblock/defaults.py:5
 msgid ""
 "\n"
 "    Censorship in the Libraries\n"
@@ -2208,94 +2207,99 @@ msgid ""
 "    Read for conciseness, clarity of thought, and form.\n"
 msgstr ""
 
-#: openassessment/xblock/defaults.py:19 openassessment/xblock/defaults.py:97
-#: openassessment/xblock/defaults.py:110
+#: openassessment/xblock/defaults.py:18 openassessment/xblock/defaults.py:96
+#: openassessment/xblock/defaults.py:109
 msgid "Ideas"
 msgstr ""
 
-#: openassessment/xblock/defaults.py:20
+#: openassessment/xblock/defaults.py:19
 msgid "Determine if there is a unifying theme or main idea."
 msgstr ""
 
-#: openassessment/xblock/defaults.py:25 openassessment/xblock/defaults.py:45
-#: openassessment/xblock/defaults.py:111
+#: openassessment/xblock/defaults.py:24 openassessment/xblock/defaults.py:44
+#: openassessment/xblock/defaults.py:110
 msgid "Poor"
 msgstr ""
 
-#: openassessment/xblock/defaults.py:26
+#: openassessment/xblock/defaults.py:25
 msgid ""
 "Difficult for the reader to discern the main idea.  Too brief or too "
 "repetitive to establish or maintain a focus."
 msgstr ""
 
-#: openassessment/xblock/defaults.py:29 openassessment/xblock/defaults.py:49
-#: openassessment/xblock/defaults.py:98
+#: openassessment/xblock/defaults.py:28 openassessment/xblock/defaults.py:48
+#: openassessment/xblock/defaults.py:97
 msgid "Fair"
 msgstr ""
 
-#: openassessment/xblock/defaults.py:30
+#: openassessment/xblock/defaults.py:29
 msgid ""
 "Presents a unifying theme or main idea, but may include minor tangents.  "
 "Stays somewhat focused on topic and task."
 msgstr ""
 
-#: openassessment/xblock/defaults.py:33 openassessment/xblock/defaults.py:53
-#: openassessment/xblock/defaults.py:102 openassessment/xblock/defaults.py:115
+#: openassessment/xblock/defaults.py:32 openassessment/xblock/defaults.py:52
+#: openassessment/xblock/defaults.py:101 openassessment/xblock/defaults.py:114
 msgid "Good"
 msgstr ""
 
-#: openassessment/xblock/defaults.py:34
+#: openassessment/xblock/defaults.py:33
 msgid ""
 "Presents a unifying theme or main idea without going off on tangents.  Stays "
 "completely focused on topic and task."
 msgstr ""
 
-#: openassessment/xblock/defaults.py:41
+#: openassessment/xblock/defaults.py:39 openassessment/xblock/defaults.py:100
+#: openassessment/xblock/defaults.py:113
+msgid "Content"
+msgstr ""
+
+#: openassessment/xblock/defaults.py:40
 msgid "Assess the content of the submission"
 msgstr ""
 
-#: openassessment/xblock/defaults.py:46
+#: openassessment/xblock/defaults.py:45
 msgid ""
 "Includes little information with few or no details or unrelated details.  "
 "Unsuccessful in attempts to explore any facets of the topic."
 msgstr ""
 
-#: openassessment/xblock/defaults.py:50
+#: openassessment/xblock/defaults.py:49
 msgid ""
 "Includes little information and few or no details.  Explores only one or two "
 "facets of the topic."
 msgstr ""
 
-#: openassessment/xblock/defaults.py:54
+#: openassessment/xblock/defaults.py:53
 msgid ""
 "Includes sufficient information and supporting details. (Details may not be "
 "fully developed; ideas may be listed.)  Explores some facets of the topic."
 msgstr ""
 
-#: openassessment/xblock/defaults.py:57
+#: openassessment/xblock/defaults.py:56
 msgid "Excellent"
 msgstr ""
 
-#: openassessment/xblock/defaults.py:58
+#: openassessment/xblock/defaults.py:57
 msgid ""
 "Includes in-depth information and exceptional supporting details that are "
 "fully developed.  Explores all facets of the topic."
 msgstr ""
 
-#: openassessment/xblock/defaults.py:66
+#: openassessment/xblock/defaults.py:65
 msgid ""
 "\n"
 "(Optional) What aspects of this response stood out to you? What did it do "
 "well? How could it be improved?\n"
 msgstr ""
 
-#: openassessment/xblock/defaults.py:72
+#: openassessment/xblock/defaults.py:71
 msgid ""
 "\n"
 "I think that this response...\n"
 msgstr ""
 
-#: openassessment/xblock/defaults.py:77
+#: openassessment/xblock/defaults.py:76
 msgid ""
 "Replace this text with your own sample response for this assignment. Then, "
 "under Response Score to the right, select an option for each criterion. "
@@ -2304,15 +2308,10 @@ msgid ""
 "you specified."
 msgstr ""
 
-#: openassessment/xblock/defaults.py:84
+#: openassessment/xblock/defaults.py:83
 msgid ""
 "Replace this text with another sample response, and then specify the options "
 "that you would select for this response."
-msgstr ""
-
-#: openassessment/xblock/defaults.py:101 openassessment/xblock/defaults.py:114
-#: openassessment/xblock/defaults.py:40
-msgid "Content"
 msgstr ""
 
 #: openassessment/xblock/grade_mixin.py:77
@@ -2652,89 +2651,103 @@ msgstr ""
 msgid "Your scores could not be checked."
 msgstr ""
 
-#: openassessment/xblock/studio_mixin.py:204
-#: openassessment/xblock/studio_mixin.py:216
+#: openassessment/xblock/studio_mixin.py:224
+#: openassessment/xblock/studio_mixin.py:236
 msgid "Error updating XBlock configuration"
 msgstr ""
 
-#: openassessment/xblock/studio_mixin.py:219
-msgid "Error: both text and file upload responses can't be disabled"
+#: openassessment/xblock/studio_mixin.py:241
+msgid "Error: Text Response and File Upload Response cannot both be disabled"
 msgstr ""
 
-#: openassessment/xblock/studio_mixin.py:222
+#: openassessment/xblock/studio_mixin.py:245
 msgid ""
 "Error: When Text Response is disabled, File Upload Response must be Required"
 msgstr ""
 
-#: openassessment/xblock/studio_mixin.py:225
+#: openassessment/xblock/studio_mixin.py:248
 msgid ""
 "Error: When File Upload Response is disabled, Text Response must be Required"
 msgstr ""
 
-#: openassessment/xblock/studio_mixin.py:249
+#: openassessment/xblock/studio_mixin.py:272
 #, python-brace-format
 msgid "Validation error: {error}"
 msgstr ""
 
-#: openassessment/xblock/studio_mixin.py:278
+#: openassessment/xblock/studio_mixin.py:303
 msgid "Successfully updated OpenAssessment XBlock"
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:114
+#: openassessment/xblock/submission_mixin.py:119
 msgid "\"submission\" required to submit answer."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:135
+#: openassessment/xblock/submission_mixin.py:140
 msgid "To submit a response, view this component in Preview or Live mode."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:141
+#: openassessment/xblock/submission_mixin.py:146
 msgid "Multiple submissions are not allowed."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:185
+#: openassessment/xblock/submission_mixin.py:179
+msgid "Response exceeds maximum allowed size."
+msgstr ""
+
+#: openassessment/xblock/submission_mixin.py:181
+msgid ""
+"Note: if you have a spellcheck or grammar check browser extension, try "
+"disabling, reloading, and reentering your response before submitting."
+msgstr ""
+
+#: openassessment/xblock/submission_mixin.py:201
+msgid "Submission cannot be empty. Please refresh the page and try again."
+msgstr ""
+
+#: openassessment/xblock/submission_mixin.py:211
 msgid "API returned unclassified exception."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:236
+#: openassessment/xblock/submission_mixin.py:262
 msgid "This response could not be saved."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:240
+#: openassessment/xblock/submission_mixin.py:266
 msgid "This response was not submitted."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:256
+#: openassessment/xblock/submission_mixin.py:282
 msgid "Files descriptions were not submitted."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:293
+#: openassessment/xblock/submission_mixin.py:321
 msgid "Files metadata could not be saved."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:418
+#: openassessment/xblock/submission_mixin.py:469
 msgid "There was an error uploading your file."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:430
+#: openassessment/xblock/submission_mixin.py:481
 msgid "Only a single file upload is allowed for this assessment."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:441
+#: openassessment/xblock/submission_mixin.py:492
 msgid ""
 "File upload failed: unsupported file type.Only the supported file types can "
 "be uploaded.If you have questions, please reach out to the course team."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:454
+#: openassessment/xblock/submission_mixin.py:505
 msgid "Error retrieving upload URL."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:735
+#: openassessment/xblock/submission_mixin.py:780
 msgid "This response has been saved but not submitted."
 msgstr ""
 
-#: openassessment/xblock/submission_mixin.py:736
+#: openassessment/xblock/submission_mixin.py:781
 msgid "This response has not been saved."
 msgstr ""
 
