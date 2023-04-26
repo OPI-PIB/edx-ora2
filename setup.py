@@ -53,7 +53,7 @@ VERSION = get_version("openassessment", "__init__.py")
 
 setup(
     name='ora2',
-    version='2.1.3',
+    version='2.1.4',
     author='edX',
     author_email='oscm@edx.org',
     url='http://github.com/edx/edx-ora2',
