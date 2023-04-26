@@ -5,10 +5,12 @@ Leaderboard step in the OpenAssessment XBlock.
 
 import logging
 
-from django.utils.translation import ugettext as _
-
 from xblock.core import XBlock
+
+from django.utils.translation import gettext as _
+
 from openassessment.assessment.errors import PeerAssessmentError, SelfAssessmentError
+from openassessment.data import OraSubmissionAnswerFactory
 from openassessment.fileupload import api as file_upload_api
 from openassessment.fileupload.exceptions import FileUploadError
 from openassessment.xblock.data_conversion import create_submission_dict
@@ -43,6 +45,7 @@ class LeaderboardMixin:
         """
         # Import is placed here to avoid model import at project startup.
         from submissions import api as sub_api
+
         # Retrieve the status of the workflow.  If no workflows have been
         # started this will be an empty dict, so status will be None.
         workflow = self.get_workflow_info()
@@ -55,7 +58,7 @@ class LeaderboardMixin:
             else:  # status is 'self' or 'peer', which implies that the workflow is incomplete
                 path, context = self.render_leaderboard_incomplete()
         except (sub_api.SubmissionError, PeerAssessmentError, SelfAssessmentError):
-            return self.render_error(_(u"An unexpected error occurred."))
+            return self.render_error(_("An unexpected error occurred."))
         else:
             return self.render_assessment(path, context)
 
@@ -82,33 +85,18 @@ class LeaderboardMixin:
             self.leaderboard_show
         )
         for score in scores:
+            raw_score_content_answer = score['content']
+            answer = OraSubmissionAnswerFactory.parse_submission_raw_answer(raw_score_content_answer)
             score['files'] = []
-            if 'file_keys' in score['content']:
-                file_keys = score['content'].get('file_keys', [])
-                descriptions = score['content'].get('files_descriptions', [])
-                file_names = score['content'].get('files_names', [])
-                for idx, key in enumerate(file_keys):
-                    file_download_url = self._get_file_download_url(key)
-                    if file_download_url:
-                        file_description = descriptions[idx] if idx < len(descriptions) else ''
-                        file_name = file_names[idx] if idx < len(file_names) else ''
-                        score['files'].append(
-                            file_upload_api.FileDescriptor(
-                                download_url=file_download_url,
-                                description=file_description,
-                                name=file_name,
-                                show_delete_button=False
-                            )._asdict()
-                        )
-
-            elif 'file_key' in score['content']:
-                file_download_url = self._get_file_download_url(score['content']['file_key'])
+            for uploaded_file in answer.get_file_uploads(missing_blank=True):
+                file_download_url = self._get_file_download_url(uploaded_file.key)
                 if file_download_url:
                     score['files'].append(
                         file_upload_api.FileDescriptor(
                             download_url=file_download_url,
-                            description='',
-                            name='',
+                            description=uploaded_file.description,
+                            name=uploaded_file.name,
+                            size=uploaded_file.size,
                             show_delete_button=False
                         )._asdict()
                     )
@@ -154,9 +142,10 @@ class LeaderboardMixin:
         try:
             file_download_url = file_upload_api.get_download_url(file_key)
         except FileUploadError as exc:
-            logger.exception(u'FileUploadError: URL retrieval failed for key {file_key} with error {error}'.format(
+            logger.exception(
+                'FileUploadError: URL retrieval failed for key %s with error %s',
                 file_key=file_key,
                 error=exc
-            ))
+            )
             file_download_url = ''
         return file_download_url

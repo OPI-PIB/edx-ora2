@@ -2,15 +2,15 @@
 The Staff Area View mixin renders all the staff-specific information used to
 determine the flow of the problem.
 """
-
-
 import copy
-from django.core.exceptions import ObjectDoesNotExist
-from functools import wraps
 import logging
+from functools import wraps
+from webob import Response
 
-from submissions.errors import SubmissionNotFoundError
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from xblock.core import XBlock
+from submissions.errors import SubmissionNotFoundError
 from openassessment.assessment.errors import PeerAssessmentInternalError
 from openassessment.fileupload.api import delete_shared_files_for_team, remove_file
 from openassessment.workflow.errors import AssessmentWorkflowError, AssessmentWorkflowInternalError
@@ -39,8 +39,8 @@ def require_global_admin(error_key):
         @wraps(func)
         def _wrapped(xblock, *args, **kwargs):  # pylint: disable=C0111
             permission_errors = {
-                "SCHEDULE_TRAINING": xblock._(u"You do not have permission to schedule training"),
-                "RESCHEDULE_TASKS": xblock._(u"You do not have permission to reschedule tasks."),
+                "SCHEDULE_TRAINING": xblock._("You do not have permission to schedule training"),
+                "RESCHEDULE_TASKS": xblock._("You do not have permission to reschedule tasks."),
             }
             if not xblock.is_admin or xblock.in_studio_preview:
                 return {'success': False, 'msg': permission_errors[error_key]}
@@ -66,9 +66,9 @@ def require_course_staff(error_key, with_json_handler=False):
         @wraps(func)
         def _wrapped(xblock, *args, **kwargs):  # pylint: disable=C0111
             permission_errors = {
-                "STAFF_AREA": xblock._(u"You do not have permission to access the ORA staff area"),
-                "STUDENT_INFO": xblock._(u"You do not have permission to access ORA learner information."),
-                "STUDENT_GRADE": xblock._(u"You do not have permission to access ORA staff grading."),
+                "STAFF_AREA": xblock._("You do not have permission to access the ORA staff area"),
+                "STUDENT_INFO": xblock._("You do not have permission to access ORA learner information."),
+                "STUDENT_GRADE": xblock._("You do not have permission to access ORA staff grading."),
             }
 
             if not xblock.is_course_staff and with_json_handler:
@@ -123,7 +123,7 @@ class StaffAreaMixin:
         context['prompts_type'] = self.prompts_type
 
         # Include release/due dates for each step in the problem
-        context['step_dates'] = list()
+        context['step_dates'] = []
         for step in ['submission'] + self.assessment_steps:
 
             # Get the dates as a student would see them
@@ -140,6 +140,16 @@ class StaffAreaMixin:
         staff_assessment_required = "staff-assessment" in self.assessment_steps
         context['staff_assessment_required'] = staff_assessment_required
         if staff_assessment_required:
+            # TODO: Remove in AU-617
+            if self.is_team_assignment():
+                context['is_enhanced_staff_grader_enabled'] = False
+            else:
+                context['is_enhanced_staff_grader_enabled'] = self.is_enhanced_staff_grader_enabled
+            context['enhanced_staff_grader_url'] = '{esg_url}/{block_id}'.format(
+                esg_url=getattr(settings, 'ORA_GRADING_MICROFRONTEND_URL', ''),
+                block_id=str(self.get_xblock_id())
+            )
+
             context.update(
                 self.get_staff_assessment_statistics_context(student_item["course_id"], student_item["item_id"])
             )
@@ -148,6 +158,16 @@ class StaffAreaMixin:
         context['is_team_assignment'] = self.is_team_assignment()
 
         context['xblock_id'] = self.get_xblock_id()
+
+        # Add studio URL to link to edit view. We actually want to direct to the vertical instead of the ORA like below:
+        # http://<studio-url>/container/block-v1:<course-id>+type@vertical+block@<block-id>
+        url = '{protocol}://{studio_url}/container/{vertical_location}'.format(
+            protocol='http' if getattr(settings, 'HTTPS', 'on') == 'off' else 'https',
+            studio_url=getattr(settings, 'CMS_BASE', ''),
+            vertical_location=str(self.parent)
+        )
+        context['studio_edit_url'] = url
+
         return path, context
 
     @staticmethod
@@ -163,6 +183,116 @@ class StaffAreaMixin:
             'staff_assessment_ungraded': grading_stats['ungraded'],
             'staff_assessment_in_progress': grading_stats['in-progress']
         }
+
+    @XBlock.handler
+    @require_course_staff("STAFF_AREA")
+    def waiting_step_data(self, data, suffix=''):  # pylint: disable=unused-argument
+        """
+        Retrieves waiting step details and aggregates information required by the view.
+
+        This returns a dict containing a list of users stuck on the waiting step, along
+        with information about staff grading and staff overrides applied.
+        """
+        student_item = self.get_student_item_dict()
+        peer_step_config = self.get_assessment_module('peer-assessment')
+
+        # Import is placed here to avoid model import at project startup.
+        from openassessment.assessment.api import peer as peer_api
+        from openassessment.assessment.api import staff as staff_api
+        from openassessment.workflow.api import get_workflows_for_status
+        from openassessment.data import map_anonymized_ids_to_usernames
+
+        # Retrieve all items in the `waiting` and `done` steps
+        workflows_waiting = get_workflows_for_status(
+            student_item["course_id"],
+            student_item["item_id"],
+            ["waiting", "done"],
+        )
+        submission_uuids = [item['submission_uuid'] for item in workflows_waiting]
+
+        # Using the workflows retrieved above, filter out all items that
+        # haven't received the required number of peer reviews and retrieve their details.
+        waiting_student_list = peer_api.get_waiting_step_details(
+            student_item["course_id"],
+            student_item["item_id"],
+            submission_uuids,
+            peer_step_config.get('must_be_graded_by'),
+        )
+        # Get external_id to username map
+        username_map = map_anonymized_ids_to_usernames(
+            [item['student_id'] for item in waiting_student_list]
+        )
+
+        # Get staff assessment details
+        staff_assessment_data = {}
+        if "staff-assessment" in self.assessment_steps:
+            # Only retrieve this if there's a staff assessment step enabled
+            # when disabled, the UI should only show "Not Applicable"
+            # This function will return either `submitted` or `not_submitted`,
+            # depending on the status on the Staff grading.
+            staff_assessment_data = staff_api.bulk_retrieve_workflow_status(
+                course_id=student_item["course_id"],
+                item_id=student_item["item_id"],
+                # Only retrieve status for assessments that are stuck in the waiting step.
+                submission_uuids=[item['submission_uuid'] for item in waiting_student_list],
+            )
+
+        # Status to readable strings mappings
+        workflow_status_map = {
+            "waiting": self._("Pending"),
+            "done": self._("Complete/Overwritten"),
+        }
+        staff_status_map = {
+            "not_applicable": self._("Not applicable"),
+            "not_submitted": self._("Not submitted"),
+            "submitted": self._("Submitted"),
+        }
+
+        def _get_submission_status(submission_uuid):
+            """
+            Retrieves the workflow submission status from the list
+            of submissions
+            """
+            return next(
+                (
+                    workflow['status'] for workflow in workflows_waiting
+                    if workflow["submission_uuid"] == submission_uuid
+                ),
+                "waiting",
+            )
+
+        # Create user statistics
+        waiting_count = 0
+        overwritten_count = 0
+
+        # Update waiting step details with username mappings
+        for item in waiting_student_list:
+            # Retrieve values from grade status and workflow status
+            staff_grade_status = staff_assessment_data.get(item['submission_uuid'], "not_applicable")
+            workflow_status = _get_submission_status(item['submission_uuid'])
+
+            if workflow_status == 'waiting':
+                waiting_count += 1
+            else:
+                overwritten_count += 1
+
+            # Append to waiting step data, and map status to readable strings
+            item.update({
+                "username": username_map[item['student_id']],
+                "staff_grade_status": staff_status_map.get(staff_grade_status),
+                "workflow_status": workflow_status_map.get(workflow_status),
+            })
+
+        waiting_step_data = {
+            "display_name": self.display_name,
+            "must_grade": peer_step_config.get('must_grade'),
+            "must_be_graded_by": peer_step_config.get('must_be_graded_by'),
+            "waiting_count": waiting_count,
+            "overwritten_count": overwritten_count,
+            "student_data": waiting_student_list,
+        }
+
+        return Response(json_body=waiting_step_data)
 
     @XBlock.handler
     @require_course_staff("STUDENT_INFO")
@@ -182,7 +312,7 @@ class StaffAreaMixin:
             return self.render_assessment(path, context)
 
         except PeerAssessmentInternalError:
-            return self.render_error(self._(u"Error getting learner information."))
+            return self.render_error(self._("Error getting learner information."))
 
     @XBlock.handler
     @require_course_staff("STUDENT_GRADE")
@@ -225,10 +355,10 @@ class StaffAreaMixin:
                         )
                     path = 'openassessmentblock/staff_area/oa_staff_grade_learners_assessment.html'
                     return self.render_assessment(path, submission_context)
-                return self.render_error(self._(u"Error loading the checked out learner response."))
-            return self.render_error(self._(u"No other learner responses are available for grading at this time."))
+                return self.render_error(self._("Error loading the checked out learner response."))
+            return self.render_error(self._("No other learner responses are available for grading at this time."))
         except PeerAssessmentInternalError:
-            return self.render_error(self._(u"Error getting staff grade information."))
+            return self.render_error(self._("Error getting staff grade information."))
 
     @XBlock.handler
     @require_course_staff("STUDENT_GRADE")
@@ -249,7 +379,7 @@ class StaffAreaMixin:
             return self.render_assessment(path, context)
 
         except PeerAssessmentInternalError:
-            return self.render_error(self._(u"Error getting staff grade ungraded and checked out counts."))
+            return self.render_error(self._("Error getting staff grade ungraded and checked out counts."))
 
     def get_student_submission_context(self, student_username, submission):
         """
@@ -281,20 +411,21 @@ class StaffAreaMixin:
             context["file_upload_type"] = self.file_upload_type
             context["staff_file_urls"] = self.get_download_urls_from_submission(submission)
             if self.should_use_user_state(context["staff_file_urls"]):
-                logger.info(u"Checking student module for upload info for user: {username} in block: {block}".format(
-                    username=student_username,
-                    block=str(self.location)
-                ))
+                logger.info(
+                    "Checking student module for upload info for user: %s in block: %s",
+                    student_username,
+                    str(self.location)
+                )
                 context['staff_file_urls'] = self.get_files_info_from_user_state(student_username)
 
                 # This particular check is for the cases affected by the incorrect filenum bug
                 # and gets all the upload URLs if feature enabled.
                 if self.should_get_all_files_urls(context['staff_file_urls']):
                     logger.info(
-                        u"Retrieving all uploaded files by user:{username} in block:{block}".format(
-                            username=student_username,
-                            block=str(self.location)
-                        ))
+                        "Retrieving all uploaded files by user:%s in block:%s",
+                        student_username,
+                        str(self.location)
+                    )
                     context['staff_file_urls'] = self.get_all_upload_urls_for_user(student_username)
 
         if self.rubric_feedback_prompt is not None:
@@ -482,7 +613,7 @@ class StaffAreaMixin:
         to remove it from the grading pools, and pass through to the submissions team API to orphan the team
         submission and individual submissions so that the team can create a new submission.
         """
-        student_item_string = "course {} item {} user {}".format(course_id, item_id, user_id)
+        student_item_string = f"course {course_id} item {item_id} user {user_id}"
 
         if not submissions:
             logger.warning('Attempted to reset team state for %s but no submission was found', student_item_string)
@@ -538,7 +669,7 @@ class StaffAreaMixin:
         comments = data.get('comments')
 
         if not comments:
-            return {"success": False, "msg": self._(u'Please enter valid reason to remove the submission.')}
+            return {"success": False, "msg": self._('Please enter valid reason to remove the submission.')}
 
         if self.is_team_assignment():
             return self._cancel_team_submission(submission_uuid, comments)
@@ -587,10 +718,10 @@ class StaffAreaMixin:
             return {
                 "success": True,
                 'msg': self._(
-                    u"The learner submission has been removed from peer assessment. "
-                    u"The learner receives a grade of zero unless you delete "
-                    u"the learner's state for the problem to allow them to "
-                    u"resubmit a response."
+                    "The learner submission has been removed from peer assessment. "
+                    "The learner receives a grade of zero unless you delete "
+                    "the learner's state for the problem to allow them to "
+                    "resubmit a response."
                 )
             }
         except (

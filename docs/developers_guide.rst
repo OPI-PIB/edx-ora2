@@ -57,9 +57,8 @@ For devstack:
 Available make commands
 -----------------------
 - ``make install-local-ora`` - installs your local ORA2 code into the LMS and Studio python virtualenvs
-- ``make javascript`` - makes the bundled JavaScript files for LMS and Studio
+- ``make static`` - builds static JS/SASS files for LMS and Studio
 - ``make quality`` - run the JSHint quality tests
-- ``make sass`` - recompiles sass, can be done while edx-platform is running, then refresh the browser to see the changes
 - ``make test`` - run all the tests
 - ``make test`` - acceptance - run the acceptance tests
 - ``make test-a11y`` - run the accessibility tests
@@ -79,21 +78,23 @@ If any changes are made to the .html files, it is necessary to re-do the transla
 
 The above command will generate translations files which will have to be checked into git.
 
-Building JS
+Building Static Files
 ------------
-This is required if there were any JS changes:
+This is required if there were any JS/SCSS changes:
 
 - from local directory (not in lms shell)
 - ``npm run build``
 
-Minifying css
------------------
-This is required if there were any scss changes:
+Hot Reload Frontend Changes
+------------
+This is required if there were any JS/SCSS changes:
 
-- be inside the shell
-- ``cd /edx/src/edx-ora2``
-- ``source edx-ora2/bin/activate``
-- ``make sass``
+- from local directory (not in lms shell)
+- ``npm run start`` to start dev server
+  - If there is port conflict, change PORT in ``.env.development``
+- from devstack directory (not in lms shell)
+- ``make lms-restart studio-restart``
+  - **NOTE**: cms does not support hot reload at the moment
 
 Running Unit Tests
 ------------------
@@ -109,6 +110,15 @@ Debugging with PDB
 The simplest way to debug ORA2 code is with PDB - Python's built in debugger. 
 One caveat: Since ORA2 has code that executes either in studio or lms context, one must be attached to the corret shell 
 in order for the breakpoints to be hit.
+
+Debugging JavaScript
+------------------
+For debugging JS in Devstack, first follow the instructions for "Hot Reload JS". This enables source maps and allows for placing breakpoints in source-mapped files from the browser dev tools.
+
+  - Locate code by browsing to ``webpack:///./openassessment/xblock/static/js/src/``. 
+    - **NOTE** The path should be within ``iframe`` for ``lms``.
+    - **TIP** Use ``CTRL + P`` or ``Command + P`` to find the file through chrome dev tools.
+  - breakpoints should toggle with hot-reloading.
 
 Other Resources
 ---------------

@@ -1,5 +1,5 @@
 // Karma configuration
-const webpackConfig = require('./webpack.dev.config.js');
+const webpackConfig = require('./webpack.prod.config.js');
 
 module.exports = function(config) {
   config.set({
@@ -32,6 +32,7 @@ module.exports = function(config) {
       'js/lib/jquery.timepicker.min.js',
       'js/lib/jquery-ui-1.10.4.min.js',
       'js/lib/underscore-min.js',
+      '../../../node_modules/@babel/polyfill/dist/polyfill.js',
       '../../../node_modules/backbone/backbone.js',
       '../../../node_modules/backgrid/lib/backgrid.min.js',
       '../../../node_modules/requirejs/require.js',
@@ -50,7 +51,10 @@ module.exports = function(config) {
       { pattern: 'js/spec/**/*.js', watched: false },
       { pattern: 'js/src/oa_shared.js', watched: false },
       { pattern: 'js/src/*_index.js', watched: false },
+      { pattern: 'js/src/lms/editors/**/*.js', included: false},
       { pattern: 'js/src/**/*.js', watched: false },
+      { pattern: 'js/src/**/*.jsx', watched: false },
+      { pattern: 'js/spec/**/*.jsx', watched: false },
 
       // fixtures
       {
@@ -69,9 +73,11 @@ module.exports = function(config) {
     preprocessors: {
       'js/src/*_index.js': ['webpack'],
       'js/src/**/*.js': ['webpack', 'coverage'],
+      'js/src/**/*.jsx': ['webpack', 'coverage'],
       'js/spec/*.js': ['webpack'],
       'js/spec/**/*.js': ['webpack'],
       'js/src/oa_shared.js': ['webpack'],
+      'js/spec/**/*.jsx': ['webpack'],
     },
 
     webpack: webpackConfig,
@@ -120,7 +126,7 @@ module.exports = function(config) {
     singleRun: true,
 
     resolve: {
-      extensions: ['', '.js'],
+      extensions: ['', '.js', '.jsx'],
     }
 
   });

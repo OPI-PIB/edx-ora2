@@ -12,6 +12,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
@@ -79,6 +80,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
             'debug': DEBUG,
         },
@@ -111,6 +113,8 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
 
+    # Waffle flag/switches
+    'waffle',
 
     # XBlock
     'workbench',
@@ -122,7 +126,7 @@ INSTALLED_APPS = (
     'openassessment.fileupload',
     'openassessment.workflow',
     'openassessment.assessment',
-
+    'openassessment.staffgrader',
 )
 
 # TODO: add config for XBLOCK_WORKBENCH { SCENARIO_CLASSES }
@@ -160,4 +164,8 @@ FEATURES = {
 
     # Set to True to enable this Xblock in mobile apps.
     'ENABLE_ORA_MOBILE_SUPPORT': False,
+
+    # Set to True to enable copying/reusing rubric data
+    # See: https://openedx.atlassian.net/browse/EDUCATOR-5751
+    'ENABLE_ORA_RUBRIC_REUSE': False
 }

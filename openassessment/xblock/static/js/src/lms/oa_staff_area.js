@@ -1,4 +1,5 @@
 import Rubric from './oa_rubric';
+import ConfirmationAlert from './oa_confirmation_alert';
 
 /**
  * Interface for staff area view.
@@ -16,9 +17,11 @@ export class StaffAreaView {
 
     OVERRIDE_UNSAVED_WARNING_KEY = 'staff-override';
 
-    constructor(element, server, baseView) {
+    constructor(element, server, responseEditorLoader, data, baseView) {
       this.element = element;
       this.server = server;
+      this.responseEditorLoader = responseEditorLoader;
+      this.data = data;
       this.baseView = baseView;
     }
 
@@ -41,6 +44,15 @@ export class StaffAreaView {
           view.baseView.showLoadError('staff_area');
         });
       }
+    }
+
+    /**
+     Use Response Editor to render response
+     * */
+    renderResponseViaEditor() {
+      const sel = $('.openassessment__staff-area', this.element);
+      const responseElements = sel.find('.submission__answer__part__text__value');
+      this.responseEditorLoader.load(this.data.TEXT_RESPONSE_EDITOR, responseElements);
     }
 
     /**
@@ -125,6 +137,7 @@ export class StaffAreaView {
               .addClass(view.baseView.IS_SHOWING_CLASS).attr('aria-expanded', 'true').focus();
           }
 
+          view.renderResponseViaEditor();
           deferred.resolve();
         }).fail(() => {
           showFormError(gettext('Unexpected server error.'));
@@ -135,21 +148,6 @@ export class StaffAreaView {
         deferred.reject();
       }
       return deferred.promise();
-    }
-
-    /**
-     * Prompt the grader when about to submit a grade for a team assignment.
-     *
-     * Team grades are assigned to each member of a team, which diverges from past behaior
-     * so we want to notify the grader.
-     */
-    confirmSubmitGradeForTeam() {
-      const msg = gettext(
-        'This grade will be applied to all members of the team. '
-            + 'Do you want to continue?',
-      );
-
-      return window.confirm(msg);
     }
 
     /**
@@ -210,7 +208,27 @@ export class StaffAreaView {
                 eventObject.preventDefault();
 
                 // team submissions get a warning prompt
-                if (teamSubmissionEnabled && !view.confirmSubmitGradeForTeam()) { return; }
+
+                if (teamSubmissionEnabled) {
+                  const msg = gettext(
+                    'This grade will be applied to all members of the team. '
+                        + 'Do you want to continue?',
+                  );
+                  view.confirmDialog.confirm(
+                    gettext('Confirm Grade Team Submission'),
+                    msg,
+                    () => {
+                      view.submitStaffGrade(
+                        submissionID,
+                        rubric,
+                        $staffGradeTab,
+                        $(eventObject.currentTarget).hasClass('continue_grading--action'),
+                      );
+                    },
+                    () => {},
+                  );
+                  return;
+                }
 
                 view.submitStaffGrade(submissionID, rubric, $staffGradeTab,
                   $(eventObject.currentTarget).hasClass('continue_grading--action'));
@@ -229,6 +247,7 @@ export class StaffAreaView {
           );
           $staffGradeContainer.addClass(view.baseView.IS_SHOWING_CLASS);
 
+          view.renderResponseViaEditor();
           deferred.resolve();
         }).fail(() => {
           showFormError(gettext('Unexpected server error.'));
@@ -392,6 +411,7 @@ export class StaffAreaView {
           }
         },
       );
+      view.confirmDialog = new ConfirmationAlert($staffArea.find('.openassessment__staff-area-dialog-confirm'));
     }
 
     /**

@@ -2,11 +2,12 @@
 
 
 import logging
+
 from django.conf import settings
 
 import botocore
 import boto3
-from botocore.exceptions import ClientError
+
 from ..exceptions import FileUploadInternalError
 from .base import BaseBackend
 
@@ -18,21 +19,24 @@ log = logging.getLogger(
 class Backend(BaseBackend):
     """ S3 Bucked File Upload Backend. """
 
-    def get_upload_url(self, key, content_type, file):
+    def get_upload_url(self, key, content_type):
         bucket_name, key_name = self._retrieve_parameters(key)
         try:
             conn = _connect_to_s3()
-            try:
-                response = conn.upload_fileobj(file, bucket_name, key_name, ExtraArgs={'ContentType': content_type})
-            except ClientError as e:
-                logging.error(e)
-                return False
-            return True
+            return conn.generate_presigned_url(
+                "put_object",
+                Params={
+                    "Bucket": bucket_name,
+                    "Key": key_name,
+                    "ContentType": content_type,
+                },
+                ExpiresIn=self.UPLOAD_URL_TIMEOUT,
+            )
         except Exception as ex:
             log.exception(
-                u"An internal exception occurred while generating an upload URL."
+                "An internal exception occurred while generating an upload URL."
             )
-            raise FileUploadInternalError(ex)
+            raise FileUploadInternalError(ex) from ex
 
     def get_download_url(self, key):
         bucket_name, key_name = self._retrieve_parameters(key)
@@ -47,9 +51,9 @@ class Backend(BaseBackend):
             )
         except Exception as ex:
             log.exception(
-                u"An internal exception occurred while generating a download URL."
+                "An internal exception occurred while generating a download URL."
             )
-            raise FileUploadInternalError(ex)
+            raise FileUploadInternalError(ex) from ex
 
     def remove_file(self, key):
         bucket_name, key_name = self._retrieve_parameters(key)

@@ -1,22 +1,29 @@
-# -*- coding: utf-8 -*-
 """
 Tests for openassessment data aggregation.
 """
 
+from collections import OrderedDict
 import csv
-from io import StringIO, BytesIO
+from copy import deepcopy
+from io import StringIO, BytesIO, TextIOWrapper
 import json
 import os.path
 import zipfile
+from unittest.mock import call, Mock, patch
 
 import ddt
-from mock import call, Mock, patch
+from freezegun import freeze_time
 
 from django.core.management import call_command
+from django.test import TestCase
 
 from submissions import api as sub_api, team_api as team_sub_api
 import openassessment.assessment.api.peer as peer_api
-from openassessment.data import CsvWriter, OraAggregateData, OraDownloadData
+from openassessment.data import (
+    CsvWriter, OraAggregateData, OraDownloadData, SubmissionFileUpload, OraSubmissionAnswerFactory,
+    VersionNotFoundException, ZippedListSubmissionAnswer, OraSubmissionAnswer, ZIPPED_LIST_SUBMISSION_VERSIONS,
+    TextOnlySubmissionAnswer, FileMissingException, map_anonymized_ids_to_usernames
+)
 from openassessment.test_utils import TransactionCacheResetTest
 from openassessment.tests.factories import *  # pylint: disable=wildcard-import
 from openassessment.workflow import api as workflow_api, team_api as team_workflow_api
@@ -24,13 +31,17 @@ from openassessment.workflow import api as workflow_api, team_api as team_workfl
 
 COURSE_ID = "Test_Course"
 
-STUDENT_ID = u"Student"
+STUDENT_ID = "Student"
+
+STUDENT_USERNAME = "Student Username"
 
 PRE_FILE_SIZE_STUDENT_ID = "Pre_FileSize_Student"
 
+PRE_FILE_SIZE_STUDENT_USERNAME = 'Pre_FileSize_Student_Username'
+
 PRE_FILE_NAME_STUDENT_ID = "Pre_FileName_Student"
 
-STUDENT_USERNAME = "Student Username"
+PRE_FILE_NAME_STUDENT_USERNAME = 'Pre_FileName_Student_Username'
 
 SCORER_ID = "Scorer"
 
@@ -44,11 +55,24 @@ USERNAME_MAPPING = {
     STUDENT_ID: STUDENT_USERNAME,
     SCORER_ID: SCORER_USERNAME,
     TEST_SCORER_ID: TEST_SCORER_USERNAME,
+    PRE_FILE_SIZE_STUDENT_ID: PRE_FILE_SIZE_STUDENT_USERNAME,
+    PRE_FILE_NAME_STUDENT_ID: PRE_FILE_NAME_STUDENT_USERNAME,
 }
 
 ITEM_ID = "item"
 
 ITEM_DISPLAY_NAME = "Open Response Assessment"
+
+ITEM_PATH_INFO = {
+    "section_index": "1",
+    "section_name": "Section",
+    "sub_section_index": "1",
+    "sub_section_name": "Sub Section",
+    "unit_index": "1",
+    "unit_name": "Unit",
+    "ora_index": "1",
+    "ora_name": ITEM_DISPLAY_NAME,
+}
 
 STUDENT_ITEM = dict(
     student_id=STUDENT_ID,
@@ -83,7 +107,7 @@ ITEM_DISPLAY_NAMES_MAPPING = {
     STUDENT_ITEM['item_id']: ITEM_DISPLAY_NAME
 }
 
-ANSWER = u"THIS IS A TEST ANSWER"
+ANSWER = {'parts': 'THIS IS A TEST ANSWER'}
 
 STEPS = ['peer']
 
@@ -99,8 +123,8 @@ RUBRIC_DICT = {
             ]
         },
         {
-            "name": u"criterion_2",
-            "label": u"criterion_2",
+            "name": "criterion_2",
+            "label": "criterion_2",
             "prompt": "Did the writer keep it safe?",
             "options": [
                 {"name": "option_1", "label": "option_1", "points": "0", "explanation": ""},
@@ -111,9 +135,9 @@ RUBRIC_DICT = {
 }
 
 ASSESSMENT_DICT = {
-    'overall_feedback': u"这是中国",
+    'overall_feedback': "这是中国",
     'criterion_feedback': {
-        "criterion_2": u"𝓨𝓸𝓾 𝓼𝓱𝓸𝓾𝓵𝓭𝓷'𝓽 𝓰𝓲𝓿𝓮 𝓾𝓹!"
+        "criterion_2": "𝓨𝓸𝓾 𝓼𝓱𝓸𝓾𝓵𝓭𝓷'𝓽 𝓰𝓲𝓿𝓮 𝓾𝓹!"
     },
     'options_selected': {
         "criterion_1": "option_1",
@@ -121,14 +145,21 @@ ASSESSMENT_DICT = {
     },
 }
 
-FEEDBACK_TEXT = u"𝓨𝓸𝓾 𝓼𝓱𝓸𝓾𝓵𝓭𝓷'𝓽 𝓰𝓲𝓿𝓮 𝓾𝓹!"
+FEEDBACK_TEXT = "𝓨𝓸𝓾 𝓼𝓱𝓸𝓾𝓵𝓭𝓷'𝓽 𝓰𝓲𝓿𝓮 𝓾𝓹!"
 
 FEEDBACK_OPTIONS = {
     "feedback_text": FEEDBACK_TEXT,
     "options": [
-        u'I disliked this assessment',
-        u'I felt this assessment was unfair',
+        'I disliked this assessment',
+        'I felt this assessment was unfair',
     ]
+}
+
+STEP_REQUIREMENTS = {
+    "peer": {
+        "must_grade": 0,
+        "must_be_graded_by": 1
+    }
 }
 
 
@@ -167,7 +198,7 @@ class CsvWriterTest(TransactionCacheResetTest):
                     actual_row = None
                 self.assertEqual(
                     actual_row, expected_row,
-                    msg=u"Output name: {}".format(output_name)
+                    msg=f"Output name: {output_name}"
                 )
 
             # Check for extra rows
@@ -177,19 +208,19 @@ class CsvWriterTest(TransactionCacheResetTest):
                 extra_row = None
 
             if extra_row is not None:
-                self.fail(u"CSV contains extra row: {}".format(extra_row))
+                self.fail(f"CSV contains extra row: {extra_row}")
 
     def test_many_submissions(self):
         # Create a lot of submissions
         num_submissions = 234
         for index in range(num_submissions):
             student_item = {
-                'student_id': "test_user_{}".format(index),
+                'student_id': f"test_user_{index}",
                 'course_id': 'test_course',
                 'item_id': 'test_item',
                 'item_type': 'openassessment',
             }
-            submission_text = u"test submission {}".format(index)
+            submission_text = f"test submission {index}"
             submission = sub_api.create_submission(student_item, submission_text)
             workflow_api.create_workflow(submission['uuid'], ['peer', 'self'])
 
@@ -226,7 +257,7 @@ class CsvWriterTest(TransactionCacheResetTest):
         # Flush out unicode errors
         self._load_fixture('db_fixtures/unicode.json')
         output_streams = self._output_streams(CsvWriter.MODELS)
-        CsvWriter(output_streams).write_to_csv(u"𝓽𝓮𝓼𝓽_𝓬𝓸𝓾𝓻𝓼𝓮")
+        CsvWriter(output_streams).write_to_csv("𝓽𝓮𝓼𝓽_𝓬𝓸𝓾𝓻𝓼𝓮")
 
         # Check that data ended up in the reports
         for output in output_streams.values():
@@ -245,7 +276,7 @@ class CsvWriterTest(TransactionCacheResetTest):
             dict: map of output names to StringIO objects.
 
         """
-        output_streams = dict()
+        output_streams = {}
 
         for output_name in names:
             output_buffer = StringIO()
@@ -268,7 +299,7 @@ class CsvWriterTest(TransactionCacheResetTest):
         fixture_path = os.path.join(
             os.path.dirname(__file__), 'data', fixture_relpath
         )
-        print(u"Loading database fixtures from {}".format(fixture_path))
+        print(f"Loading database fixtures from {fixture_path}")
         call_command('loaddata', fixture_path)
 
 
@@ -279,53 +310,72 @@ class TestOraAggregateData(TransactionCacheResetTest):
     Test the component parts of OraAggregateData
     """
 
-    def _build_criteria_and_assessment_parts(self, num_criteria=1, feedback=""):
+    @classmethod
+    def build_criteria_and_assessment_parts(cls, num_criteria=1, feedback="",
+                                            assessment_options=None, criterion_options=None):
         """ Build a set of criteria and assessment parts for the rubric. """
-        rubric = RubricFactory()
-        criteria = [CriterionFactory(rubric=rubric, order_num=n + 1) for n in range(num_criteria)]
+        if criterion_options:
+            # Extract the criteria and rubric from the options, if provided.
+            criteria = [option.criterion for option in criterion_options]
+            rubric = criteria[0].rubric
+        else:
+            # Generate the rubric, criteria, and options
+            rubric = RubricFactory()
+            criteria = [CriterionFactory(rubric=rubric, order_num=n + 1) for n in range(num_criteria)]
+            criterion_options = []
+            for criterion in criteria:
+                criterion_options.append(CriterionOptionFactory(criterion=criterion))
 
-        criterion_options = []
-        # for every criterion, make a criterion option
-        for criterion in criteria:
-            criterion_options.append(CriterionOptionFactory(criterion=criterion))
-
-        assessment = AssessmentFactory(rubric=rubric, feedback=feedback, scorer_id=TEST_SCORER_ID)
+        assessment_options = assessment_options or {'scorer_id': TEST_SCORER_ID}
+        assessment_data = dict(rubric=rubric, feedback=feedback, **assessment_options)
+        assessment = AssessmentFactory(**assessment_data)
         for criterion, option in zip(criteria, criterion_options):
             AssessmentPartFactory(assessment=assessment, criterion=criterion, option=option, feedback=feedback)
         return assessment
 
     def _assessment_cell(self, assessment, feedback=""):
         """ Build a string for the given assessment information. """
-        cell = u"Assessment #{id}\n" \
-               u"-- scored_at: {scored_at}\n" \
-               u"-- type: {type}\n" \
-               u"-- scorer_username: {scorer_username}\n" \
-               u"-- scorer_id: {scorer_id}\n"\
-            .format(
-                id=assessment.id,
-                scored_at=assessment.scored_at,
-                type=assessment.score_type,
-                scorer_username=USERNAME_MAPPING[assessment.scorer_id],
-                scorer_id=assessment.scorer_id,
-            )
+        cell = [
+            f"Assessment #{assessment.id}",
+            f"-- scored_at: {assessment.scored_at}",
+            f"-- type: {assessment.score_type}",
+        ]
+        if assessment.score_type == peer_api.PEER_TYPE:
+            cell.append("-- used to calculate peer grade: False")
+
+        cell += [
+            f"-- scorer_username: {USERNAME_MAPPING[assessment.scorer_id]}",
+            f"-- scorer_id: {assessment.scorer_id}"
+        ]
         if feedback:
-            cell += u"-- overall_feedback: {}\n".format(feedback)
-        return cell
+            cell.append(f"-- overall_feedback: {feedback}")
+
+        return "\n".join(cell) + "\n"
 
     def test_map_anonymized_ids_to_usernames(self):
         with patch('openassessment.data.get_user_model') as get_user_model_mock:
             get_user_model_mock.return_value.objects.filter.return_value.annotate.return_value.values.return_value = [
                 {'anonymous_id': STUDENT_ID, 'username': STUDENT_USERNAME},
+                {'anonymous_id': PRE_FILE_SIZE_STUDENT_ID, 'username': PRE_FILE_SIZE_STUDENT_USERNAME},
+                {'anonymous_id': PRE_FILE_NAME_STUDENT_ID, 'username': PRE_FILE_NAME_STUDENT_USERNAME},
                 {'anonymous_id': SCORER_ID, 'username': SCORER_USERNAME},
                 {'anonymous_id': TEST_SCORER_ID, 'username': TEST_SCORER_USERNAME},
             ]
 
             # pylint: disable=protected-access
-            mapping = OraAggregateData._map_anonymized_ids_to_usernames([STUDENT_ID, SCORER_ID, TEST_SCORER_ID])
+            mapping = map_anonymized_ids_to_usernames(
+                [
+                    STUDENT_ID,
+                    PRE_FILE_SIZE_STUDENT_ID,
+                    PRE_FILE_NAME_STUDENT_ID,
+                    SCORER_ID,
+                    TEST_SCORER_ID,
+                ]
+            )
 
         self.assertEqual(mapping, USERNAME_MAPPING)
 
-    def test_map_sudents_and_scorers_ids_to_usernames(self):
+    def test_map_students_and_scorers_ids_to_usernames(self):
         test_submission_information = [
             (
                 dict(
@@ -349,16 +399,16 @@ class TestOraAggregateData(TransactionCacheResetTest):
             ),
         ]
 
-        with patch("openassessment.data.OraAggregateData._map_anonymized_ids_to_usernames") as map_mock:
+        with patch("openassessment.data.map_anonymized_ids_to_usernames") as map_mock:
             # pylint: disable=protected-access
-            OraAggregateData._map_sudents_and_scorers_ids_to_usernames(
+            OraAggregateData._map_students_and_scorers_ids_to_usernames(
                 test_submission_information
             )
             map_mock.assert_called_once_with([STUDENT_ID, SCORER_ID])
 
     def test_build_assessments_cell(self):
         # One assessment
-        assessment1 = self._build_criteria_and_assessment_parts()
+        assessment1 = self.build_criteria_and_assessment_parts()
 
         # pylint: disable=protected-access
         assessment_cell = OraAggregateData._build_assessments_cell([assessment1], USERNAME_MAPPING)
@@ -367,7 +417,7 @@ class TestOraAggregateData(TransactionCacheResetTest):
         self.assertEqual(assessment_cell, a1_cell)
 
         # Multiple assessments
-        assessment2 = self._build_criteria_and_assessment_parts(feedback="Test feedback")
+        assessment2 = self.build_criteria_and_assessment_parts(feedback="Test feedback")
 
         # pylint: disable=protected-access
         assessment_cell = OraAggregateData._build_assessments_cell([assessment1, assessment2], USERNAME_MAPPING)
@@ -376,21 +426,49 @@ class TestOraAggregateData(TransactionCacheResetTest):
 
         self.assertEqual(assessment_cell, a1_cell + a2_cell)
 
+    @ddt.data(True, False)
+    def test_build_assessments_cell__scored_peer_assessment(self, scored):
+        assessment1 = self.build_criteria_and_assessment_parts()
+        assessment2 = self.build_criteria_and_assessment_parts()
+        assert assessment1.score_type == peer_api.PEER_TYPE
+        assert assessment2.score_type == peer_api.PEER_TYPE
+
+        scored_peer_assessment_ids = {assessment1.id}
+        if scored:
+            scored_peer_assessment_ids.add(assessment2.id)
+
+        # pylint: disable=protected-access
+        assessment_cell = OraAggregateData._build_assessments_cell(
+            [assessment2],
+            USERNAME_MAPPING,
+            scored_peer_assessment_ids
+        )
+        assert f"used to calculate peer grade: {scored}" in assessment_cell
+
+    def test_build_assessments_cell__non_peer_assessment(self):
+        assessment = self.build_criteria_and_assessment_parts()
+        assessment.score_type = "XX"
+        assessment.save()
+
+        # pylint: disable=protected-access
+        assessment_cell = OraAggregateData._build_assessments_cell([assessment], USERNAME_MAPPING)
+        assert "used to calculate peer grade" not in assessment_cell
+
     def _assessment_part_cell(self, assessment_part, feedback=""):
         """ Build the string representing an assessment part. """
 
-        cell = u"-- {criterion_label}: {option_label} ({option_points})\n".format(
+        cell = "-- {criterion_label}: {option_label} ({option_points})\n".format(
             criterion_label=assessment_part.criterion.label,
             option_label=assessment_part.option.label,
             option_points=assessment_part.option.points,
         )
         if feedback:
-            cell += u"-- feedback: {}\n".format(feedback)
+            cell += f"-- feedback: {feedback}\n"
         return cell
 
     def test_build_assessments_parts_cell(self):
-        assessment1 = self._build_criteria_and_assessment_parts()
-        a1_cell = u"Assessment #{}\n".format(assessment1.id)
+        assessment1 = self.build_criteria_and_assessment_parts()
+        a1_cell = f"Assessment #{assessment1.id}\n"
 
         for part in assessment1.parts.all():
             a1_cell += self._assessment_part_cell(part)
@@ -400,8 +478,8 @@ class TestOraAggregateData(TransactionCacheResetTest):
         self.assertEqual(a1_cell, assessment_part_cell)
 
         # Second assessment with 2 component parts and individual option feedback
-        assessment2 = self._build_criteria_and_assessment_parts(num_criteria=2, feedback="Test feedback")
-        a2_cell = u"Assessment #{}\n".format(assessment2.id)
+        assessment2 = self.build_criteria_and_assessment_parts(num_criteria=2, feedback="Test feedback")
+        a2_cell = f"Assessment #{assessment2.id}\n"
 
         for part in assessment2.parts.all():
             a2_cell += self._assessment_part_cell(part, feedback="Test feedback")
@@ -463,7 +541,7 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
     """
 
     def setUp(self):
-        super(TestOraAggregateDataIntegration, self).setUp()
+        super().setUp()
         self.maxDiff = None  # pylint: disable=invalid-name
         # Create submissions and assessments
         self.submission = self._create_submission(STUDENT_ITEM)
@@ -475,8 +553,7 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
         self.assertEqual(self.assessment['parts'][0]['criterion']['label'], "criterion_1")
 
         sub_api.set_score(self.submission['uuid'], self.earned_points, self.possible_points)
-        self.score = sub_api.get_score(STUDENT_ITEM)
-        peer_api.get_score(self.submission['uuid'], {'must_be_graded_by': 1, 'must_grade': 0})
+        peer_api.get_score(self.submission['uuid'], STEP_REQUIREMENTS['peer'])
         self._create_assessment_feedback(self.submission['uuid'])
 
     def _create_submission(self, student_item_dict, steps=None):
@@ -525,6 +602,8 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
         feedback_dict = FEEDBACK_OPTIONS.copy()
         feedback_dict['submission_uuid'] = submission_uuid
         peer_api.set_assessment_feedback(feedback_dict)
+        workflow_api.update_from_assessments(submission_uuid, STEP_REQUIREMENTS)
+        self.score = sub_api.get_score(STUDENT_ITEM)
 
     def _other_student(self, no_of_student):
         """
@@ -539,9 +618,11 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
         return ITEM_ID + '_' + str(no_of_student)
 
     def test_collect_ora2_data(self):
-        with patch('openassessment.data.OraAggregateData._map_anonymized_ids_to_usernames') as map_mock:
-            map_mock.return_value = USERNAME_MAPPING
-            headers, data = OraAggregateData.collect_ora2_data(COURSE_ID)
+        with patch('openassessment.data.map_anonymized_ids_to_usernames') as map_mock:
+            with patch('openassessment.data.peer_api.get_bulk_scored_assessments') as mock_get_scored_assessments:
+                map_mock.return_value = USERNAME_MAPPING
+                mock_get_scored_assessments.return_value = {Mock(id=self.assessment['id'])}
+                headers, data = OraAggregateData.collect_ora2_data(COURSE_ID)
 
         self.assertEqual(headers, [
             'Submission ID',
@@ -569,13 +650,13 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
             SCORER_ID,
             self.scorer_submission['submitted_at'],
             json.dumps(self.scorer_submission['answer']),
-            u'',
-            u'',
-            u'',
-            u'',
-            u'',
-            u'',
-            u'',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
         ])
         self.assertEqual(data[1], [
             self.submission['uuid'],
@@ -586,21 +667,21 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
             STUDENT_ID,
             self.submission['submitted_at'],
             json.dumps(self.submission['answer']),
-            u"Assessment #{id}\n-- scored_at: {scored_at}\n-- type: PE\n".format(
-                id=self.assessment['id'],
-                scored_at=self.assessment['scored_at'],
-            ) + u"-- scorer_username: {scorer_username}\n".format(
-                scorer_username=USERNAME_MAPPING[self.assessment['scorer_id']]
-            ) + u"-- scorer_id: {scorer_id}\n-- overall_feedback: {feedback}\n".format(
-                scorer_id=self.assessment['scorer_id'],
-                feedback=self.assessment['feedback']
+            (
+                f"Assessment #{self.assessment['id']}\n"
+                f"-- scored_at: {self.assessment['scored_at']}\n"
+                "-- type: PE\n"
+                "-- used to calculate peer grade: True\n"
+                f"-- scorer_username: {USERNAME_MAPPING[self.assessment['scorer_id']]}\n"
+                f"-- scorer_id: {self.assessment['scorer_id']}\n"
+                f"-- overall_feedback: {self.assessment['feedback']}\n"
             ),
-            u"Assessment #{id}\n-- {label}: {option_label} ({points})\n".format(
+            "Assessment #{id}\n-- {label}: {option_label} ({points})\n".format(
                 id=self.assessment['id'],
                 label=self.assessment['parts'][0]['criterion']['label'],
                 option_label=self.assessment['parts'][0]['criterion']['options'][0]['label'],
                 points=self.assessment['parts'][0]['criterion']['options'][0]['points'],
-            ) + u"-- {label}: {option_label} ({points})\n-- feedback: {feedback}\n".format(
+            ) + "-- {label}: {option_label} ({points})\n-- feedback: {feedback}\n".format(
                 label=self.assessment['parts'][1]['criterion']['label'],
                 option_label=self.assessment['parts'][1]['criterion']['options'][1]['label'],
                 points=self.assessment['parts'][1]['criterion']['options'][1]['points'],
@@ -621,7 +702,8 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
         """
 
         with patch.dict('django.conf.settings.FEATURES', {'ENABLE_ORA_USERNAMES_ON_DATA_EXPORT': False}):
-            headers, data = OraAggregateData.collect_ora2_data(COURSE_ID)
+            with patch('openassessment.data.peer_api.get_bulk_scored_assessments', return_value=set()):
+                headers, data = OraAggregateData.collect_ora2_data(COURSE_ID)
 
         self.assertEqual(headers, [
             'Submission ID',
@@ -647,13 +729,13 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
             SCORER_ID,
             self.scorer_submission['submitted_at'],
             json.dumps(self.scorer_submission['answer']),
-            u'',
-            u'',
-            u'',
-            u'',
-            u'',
-            u'',
-            u'',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
         ])
         self.assertEqual(data[1], [
             self.submission['uuid'],
@@ -663,19 +745,20 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
             STUDENT_ID,
             self.submission['submitted_at'],
             json.dumps(self.submission['answer']),
-            u"Assessment #{id}\n-- scored_at: {scored_at}\n-- type: PE\n".format(
-                id=self.assessment['id'],
-                scored_at=self.assessment['scored_at'],
-            ) + u"-- scorer_id: {scorer_id}\n-- overall_feedback: {feedback}\n".format(
-                scorer_id=self.assessment['scorer_id'],
-                feedback=self.assessment['feedback']
+            (
+                f"Assessment #{self.assessment['id']}\n"
+                f"-- scored_at: {self.assessment['scored_at']}\n"
+                "-- type: PE\n"
+                "-- used to calculate peer grade: False\n"
+                f"-- scorer_id: {self.assessment['scorer_id']}\n"
+                f"-- overall_feedback: {self.assessment['feedback']}\n"
             ),
-            u"Assessment #{id}\n-- {label}: {option_label} ({points})\n".format(
+            "Assessment #{id}\n-- {label}: {option_label} ({points})\n".format(
                 id=self.assessment['id'],
                 label=self.assessment['parts'][0]['criterion']['label'],
                 option_label=self.assessment['parts'][0]['criterion']['options'][0]['label'],
                 points=self.assessment['parts'][0]['criterion']['options'][0]['points'],
-            ) + u"-- {label}: {option_label} ({points})\n-- feedback: {feedback}\n".format(
+            ) + "-- {label}: {option_label} ({points})\n-- feedback: {feedback}\n".format(
                 label=self.assessment['parts'][1]['criterion']['label'],
                 option_label=self.assessment['parts'][1]['criterion']['options'][1]['label'],
                 points=self.assessment['parts'][1]['criterion']['options'][1]['points'],
@@ -689,9 +772,9 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
         ])
 
     @ddt.data(
-        u'ゅせ第1図 ГЂіи', u"lіиэ ъэтшээи",
-        {'parts': [{'text': u'ぞひのぽ ГЂіи lіиэ ъэтшээи'}]},
-        {'files_descriptions': [u"Ámate a ti mismo primero y todo lo demás"]}
+        'ゅせ第1図 ГЂіи', "lіиэ ъэтшээи",
+        {'parts': [{'text': 'ぞひのぽ ГЂіи lіиэ ъэтшээи'}]},
+        {'files_descriptions': ["Ámate a ti mismo primero y todo lo demás"]}
     )
     def test_collect_ora2_data_with_special_characters(self, answer):
         """
@@ -706,10 +789,77 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
         submission = sub_api._get_submission_model(self.submission['uuid'])  # pylint: disable=protected-access
         submission.answer = answer
         submission.save()
-        with patch('openassessment.data.OraAggregateData._map_anonymized_ids_to_usernames') as map_mock:
-            map_mock.return_value = USERNAME_MAPPING
-            _, rows = OraAggregateData.collect_ora2_data(COURSE_ID)
+        with patch('openassessment.data.map_anonymized_ids_to_usernames') as map_mock:
+            with patch('openassessment.data.peer_api.get_bulk_scored_assessments', return_value=set()):
+                map_mock.return_value = USERNAME_MAPPING
+                _, rows = OraAggregateData.collect_ora2_data(COURSE_ID)
         self.assertEqual(json.dumps(answer, ensure_ascii=False), rows[1][7])
+
+    def test_collect_ora2_summary(self):
+        headers, data = OraAggregateData.collect_ora2_summary(COURSE_ID)
+
+        self.assertEqual(headers, [
+            'block_name',
+            'student_id',
+            'status',
+            'is_peer_complete',
+            'is_peer_graded',
+            'is_self_complete',
+            'is_self_graded',
+            'is_staff_complete',
+            'is_staff_graded',
+            'is_training_complete',
+            'is_training_graded',
+            'num_peers_graded',
+            'num_graded_by_peers',
+            'is_staff_grade_received',
+            'is_final_grade_received',
+            'final_grade_points_earned',
+            'final_grade_points_possible',
+        ])
+
+        # one row for each user, ora pair
+        self.assertEqual(len(data), 2)
+
+        self.assertEqual(data[0], [
+            ITEM_ID,
+            SCORER_ID,
+            'peer',
+            0,
+            0,
+            '',
+            '',
+            1,
+            1,
+            '',
+            '',
+            1,
+            0,
+            0,
+            0,
+            '',
+            '',
+        ])
+
+        self.assertEqual(data[1], [
+            ITEM_ID,
+            STUDENT_ID,
+            'done',
+            1,
+            1,
+            '',
+            '',
+            1,
+            1,
+            '',
+            '',
+            0,
+            1,
+            0,
+            1,
+            1,
+            2,
+        ])
 
     def test_collect_ora2_responses(self):
         item_id2 = self._other_item(2)
@@ -784,8 +934,8 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
             self.assertEqual({'total', 'training', 'peer', 'self', 'staff', 'waiting', 'done', 'cancelled', 'teams'},
                              set(data[item].keys()))
         self.assertEqual(data[ITEM_ID], {
-            'total': 2, 'training': 0, 'peer': 2, 'self': 0, 'staff': 0, 'waiting': 0,
-            'done': 0, 'cancelled': 0, 'teams': 0
+            'total': 2, 'training': 0, 'peer': 1, 'self': 0, 'staff': 0, 'waiting': 0,
+            'done': 1, 'cancelled': 0, 'teams': 0
         })
         self.assertEqual(data[item_id2], {
             'total': 2, 'training': 0, 'peer': 1, 'self': 1, 'staff': 0, 'waiting': 0,
@@ -796,8 +946,8 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
             'done': 0, 'cancelled': 0, 'teams': 0
         })
         self.assertEqual(data[team_item_id], {
-            'total': 2, 'training': 0, 'peer': 0, 'self': 0, 'staff': 0, 'waiting': 0,
-            'done': 0, 'cancelled': 0, 'teams': 2
+            'total': 2, 'training': 0, 'peer': 0, 'self': 0, 'staff': 0, 'waiting': 2,
+            'done': 0, 'cancelled': 0, 'teams': 0
         })
 
         data = OraAggregateData.collect_ora2_responses(COURSE_ID, ['staff', 'peer'])
@@ -807,13 +957,158 @@ class TestOraAggregateDataIntegration(TransactionCacheResetTest):
         self.assertIn(item_id3, data)
         for item in [ITEM_ID, item_id2, item_id3]:
             self.assertEqual({'total', 'peer', 'staff'}, set(data[item].keys()))
-        self.assertEqual(data[ITEM_ID], {'total': 2, 'peer': 2, 'staff': 0})
+        self.assertEqual(data[ITEM_ID], {'total': 1, 'peer': 1, 'staff': 0})
         self.assertEqual(data[item_id2], {'total': 1, 'peer': 1, 'staff': 0})
         self.assertEqual(data[item_id3], {'total': 1, 'peer': 1, 'staff': 0})
+
+    def test_generate_assessment_data_no_submission(self):
+        rows = list(OraAggregateData.generate_assessment_data('block_id_goes_here'))
+        self.assertEqual(rows, [OrderedDict([
+            ('Item ID', 'block_id_goes_here'),
+            ('Submission ID', ''),
+        ])])
+
+    def test_generate_assessment_data_no_assessment(self):
+        submission = self._create_submission(STUDENT_ITEM)
+        submission_uuid = submission['uuid']
+        rows = list(OraAggregateData.generate_assessment_data('block_id_goes_here', submission_uuid))
+        self.assertEqual(rows, [OrderedDict([
+            ('Item ID', 'block_id_goes_here'),
+            ('Submission ID', submission_uuid),
+            ('Anonymized Student ID', 'Student'),
+            ('Response Files', ''),
+        ])])
+
+    @freeze_time("2020-01-01 12:23:34")
+    def test_generate_assessment_data(self):
+        # Create a submission with many assessments and a final score.
+        submission = self._create_submission(STUDENT_ITEM)
+        submission_uuid = submission['uuid']
+
+        rubric = RubricFactory()
+        criteria = [CriterionFactory(rubric=rubric,
+                                     order_num=n + 1,
+                                     name=f'Criteria {n}',
+                                     label=f'label_{n}')
+                    for n in range(2)]
+
+        assessments = []
+        for index in range(1, 4):
+            criterion_options = [
+                CriterionOptionFactory(criterion=criterion,
+                                       points=index,
+                                       name=f'Option {n}',
+                                       label=f'option_{n}')
+                for (n, criterion) in enumerate(criteria)
+            ]
+            assessment = TestOraAggregateData.build_criteria_and_assessment_parts(
+                feedback='feedback for {}'.format(STUDENT_ITEM['student_id']),
+                assessment_options={
+                    'submission_uuid': submission_uuid,
+                    'scorer_id': f'test_scorer_{index}',
+                },
+                criterion_options=criterion_options,
+            )
+            assessments.append(assessment)
+
+        sub_api.set_score(submission_uuid, 9, 10)
+        peer_api.get_score(submission_uuid, {'must_be_graded_by': 1, 'must_grade': 0})
+        self._create_assessment_feedback(submission_uuid)
+
+        # Generate the assessment report
+        rows = []
+        for row in OraAggregateData.generate_assessment_data('block_id_goes_here', submission_uuid):
+            rows.append(row)
+
+        self.assertEqual([
+            OrderedDict([
+                ('Item ID', 'block_id_goes_here'),
+                ('Submission ID', assessments[2].submission_uuid),
+                ('Anonymized Student ID', 'Student'),
+                ('Assessment ID', assessments[2].id),
+                ('Assessment Scored Date', '2020-01-01'),
+                ('Assessment Scored Time', '12:23:34 UTC'),
+                ('Assessment Type', 'PE'),
+                ('Anonymous Scorer Id', 'test_scorer_3'),
+                ('Criterion 1: label_0', 'option_0'),
+                ('Points 1', 3),
+                ('Median Score 1', 2),
+                ('Feedback 1', 'feedback for Student'),
+                ('Criterion 2: label_1', 'option_1'),
+                ('Points 2', 3),
+                ('Median Score 2', 2),
+                ('Feedback 2', 'feedback for Student'),
+                ('Overall Feedback', 'feedback for Student'),
+                ('Assessment Score Earned', 6),
+                ('Assessment Scored At', '2020-01-01 12:23:34 UTC'),
+                ('Date/Time Final Score Given', '2020-01-01 12:23:34 UTC'),
+                ('Final Score Earned', 9),
+                ('Final Score Possible', 10),
+                ('Feedback Statements Selected', ''),
+                ('Feedback on Assessment', "𝓨𝓸𝓾 𝓼𝓱𝓸𝓾𝓵𝓭𝓷'𝓽 𝓰𝓲𝓿𝓮 𝓾𝓹!"),
+                ('Response Files', ''),
+            ]),
+            OrderedDict([
+                ('Item ID', 'block_id_goes_here'),
+                ('Submission ID', assessments[1].submission_uuid),
+                ('Anonymized Student ID', 'Student'),
+                ('Assessment ID', assessments[1].id),
+                ('Assessment Scored Date', '2020-01-01'),
+                ('Assessment Scored Time', '12:23:34 UTC'),
+                ('Assessment Type', 'PE'),
+                ('Anonymous Scorer Id', 'test_scorer_2'),
+                ('Criterion 1: label_0', 'option_0'),
+                ('Points 1', 2),
+                ('Median Score 1', 2),
+                ('Feedback 1', 'feedback for Student'),
+                ('Criterion 2: label_1', 'option_1'),
+                ('Points 2', 2),
+                ('Median Score 2', 2),
+                ('Feedback 2', 'feedback for Student'),
+                ('Overall Feedback', 'feedback for Student'),
+                ('Assessment Score Earned', 4),
+                ('Assessment Scored At', '2020-01-01 12:23:34 UTC'),
+                ('Date/Time Final Score Given', '2020-01-01 12:23:34 UTC'),
+                ('Final Score Earned', 9),
+                ('Final Score Possible', 10),
+                ('Feedback Statements Selected', ''),
+                ('Feedback on Assessment', "𝓨𝓸𝓾 𝓼𝓱𝓸𝓾𝓵𝓭𝓷'𝓽 𝓰𝓲𝓿𝓮 𝓾𝓹!"),
+                ('Response Files', ''),
+            ]),
+            OrderedDict([
+                ('Item ID', 'block_id_goes_here'),
+                ('Submission ID', assessments[0].submission_uuid),
+                ('Anonymized Student ID', 'Student'),
+                ('Assessment ID', assessments[0].id),
+                ('Assessment Scored Date', '2020-01-01'),
+                ('Assessment Scored Time', '12:23:34 UTC'),
+                ('Assessment Type', 'PE'),
+                ('Anonymous Scorer Id', 'test_scorer_1'),
+                ('Criterion 1: label_0', 'option_0'),
+                ('Points 1', 1),
+                ('Median Score 1', 2),
+                ('Feedback 1', 'feedback for Student'),
+                ('Criterion 2: label_1', 'option_1'),
+                ('Points 2', 1),
+                ('Median Score 2', 2),
+                ('Feedback 2', 'feedback for Student'),
+                ('Overall Feedback', 'feedback for Student'),
+                ('Assessment Score Earned', 2),
+                ('Assessment Scored At', '2020-01-01 12:23:34 UTC'),
+                ('Date/Time Final Score Given', '2020-01-01 12:23:34 UTC'),
+                ('Final Score Earned', 9),
+                ('Final Score Possible', 10),
+                ('Feedback Statements Selected', ''),
+                ('Feedback on Assessment', "𝓨𝓸𝓾 𝓼𝓱𝓸𝓾𝓵𝓭𝓷'𝓽 𝓰𝓲𝓿𝓮 𝓾𝓹!"),
+                ('Response Files', ''),
+            ]),
+        ], rows)
 
 
 @ddt.ddt
 class TestOraDownloadDataIntegration(TransactionCacheResetTest):
+    """ Unit tests for OraDownloadData """
+
     def setUp(self):
         super().setUp()
         self.maxDiff = None  # pylint: disable=invalid-name
@@ -828,11 +1123,11 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
         self.file_name_3 = 'file_name_3.png'
         self.file_name_4 = 'file_name_4.png'
 
-        self.file_key_1 = '{}/{}/{}'.format(STUDENT_ID, COURSE_ID, ITEM_ID)
-        self.file_key_2 = '{}/{}/{}/1'.format(STUDENT_ID, COURSE_ID, ITEM_ID)
-        self.file_key_3 = '{}/{}/{}/2'.format(STUDENT_ID, COURSE_ID, ITEM_ID)
-        self.file_key_4 = '{}/{}/{}'.format(PRE_FILE_SIZE_STUDENT_ID, COURSE_ID, ITEM_ID)
-        self.file_key_5 = '{}/{}/{}'.format(PRE_FILE_NAME_STUDENT_ID, COURSE_ID, ITEM_ID)
+        self.file_key_1 = f'{STUDENT_ID}/{COURSE_ID}/{ITEM_ID}'
+        self.file_key_2 = f'{STUDENT_ID}/{COURSE_ID}/{ITEM_ID}/1'
+        self.file_key_3 = f'{STUDENT_ID}/{COURSE_ID}/{ITEM_ID}/2'
+        self.file_key_4 = f'{PRE_FILE_SIZE_STUDENT_ID}/{COURSE_ID}/{ITEM_ID}'
+        self.file_key_5 = f'{PRE_FILE_NAME_STUDENT_ID}/{COURSE_ID}/{ITEM_ID}'
 
         self.file_description_1 = 'Some Description 1'
         self.file_description_2 = 'Some Description 2'
@@ -876,19 +1171,26 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
             'file_keys': [self.file_key_5],
             'files_descriptions': [self.file_description_5],
         }
+        file_5_generated_name = SubmissionFileUpload.generate_name_from_key(self.file_key_5)
 
+        submission_directory = (
+            f"[{ITEM_PATH_INFO['section_index']}]{ITEM_PATH_INFO['section_name']}, "
+            f"[{ITEM_PATH_INFO['sub_section_index']}]{ITEM_PATH_INFO['sub_section_name']}, "
+            f"[{ITEM_PATH_INFO['unit_index']}]{ITEM_PATH_INFO['unit_name']}"
+        )
         self.submission_files_data = [
             {
                 'course_id': COURSE_ID,
                 'block_id': ITEM_ID,
                 'student_id': PRE_FILE_NAME_STUDENT_ID,
                 'key': self.file_key_5,
-                'name': 'File_1',
+                'name': file_5_generated_name,
                 'type': OraDownloadData.ATTACHMENT,
                 'description': self.file_description_5,
                 'size': 0,
-                'file_path': '{}/{}/{}/attachments/{}'.format(
-                    COURSE_ID, ITEM_ID, PRE_FILE_NAME_STUDENT_ID, "File_1"
+                'file_path': (
+                    f"{submission_directory}/[{ITEM_PATH_INFO['ora_index']}]"
+                    f" - {USERNAME_MAPPING[PRE_FILE_NAME_STUDENT_ID]} - {file_5_generated_name}"
                 ),
             },
             {
@@ -896,13 +1198,14 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
                 'block_id': ITEM_ID,
                 'student_id': PRE_FILE_NAME_STUDENT_ID,
                 'key': '',
-                'name': 'part_0.txt',
+                'name': 'prompt_0.txt',
                 'type': OraDownloadData.TEXT,
                 'description': 'Submission text.',
                 'content': self.answer_text,
                 'size': len(self.answer_text),
-                'file_path': '{}/{}/{}/{}'.format(
-                    COURSE_ID, ITEM_ID, PRE_FILE_NAME_STUDENT_ID, 'part_0.txt'
+                'file_path': (
+                    f"{submission_directory}/[{ITEM_PATH_INFO['ora_index']}]"
+                    f" - {USERNAME_MAPPING[PRE_FILE_NAME_STUDENT_ID]} - prompt_0.txt"
                 ),
             },
             {
@@ -914,8 +1217,9 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
                 'type': OraDownloadData.ATTACHMENT,
                 'description': self.file_description_4,
                 'size': 0,
-                'file_path': '{}/{}/{}/attachments/{}'.format(
-                    COURSE_ID, ITEM_ID, PRE_FILE_SIZE_STUDENT_ID, self.file_name_4
+                'file_path': (
+                    f"{submission_directory}/[{ITEM_PATH_INFO['ora_index']}]"
+                    f" - {USERNAME_MAPPING[PRE_FILE_SIZE_STUDENT_ID]} - {self.file_name_4}"
                 ),
             },
             {
@@ -923,13 +1227,14 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
                 'block_id': ITEM_ID,
                 'student_id': PRE_FILE_SIZE_STUDENT_ID,
                 'key': '',
-                'name': 'part_0.txt',
+                'name': 'prompt_0.txt',
                 'type': OraDownloadData.TEXT,
                 'description': 'Submission text.',
                 'content': self.answer_text,
                 'size': len(self.answer_text),
-                'file_path': '{}/{}/{}/{}'.format(
-                    COURSE_ID, ITEM_ID, PRE_FILE_SIZE_STUDENT_ID, 'part_0.txt'
+                'file_path': (
+                    f"{submission_directory}/[{ITEM_PATH_INFO['ora_index']}]"
+                    f" - {USERNAME_MAPPING[PRE_FILE_SIZE_STUDENT_ID]} - prompt_0.txt"
                 ),
             },
             {
@@ -941,8 +1246,9 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
                 'type': OraDownloadData.ATTACHMENT,
                 'description': self.file_description_1,
                 'size': self.file_size_1,
-                'file_path': '{}/{}/{}/attachments/{}'.format(
-                    COURSE_ID, ITEM_ID, STUDENT_ID, self.file_name_1
+                'file_path': (
+                    f"{submission_directory}/[{ITEM_PATH_INFO['ora_index']}]"
+                    f" - {USERNAME_MAPPING[STUDENT_ID]} - {self.file_name_1}"
                 ),
             },
             {
@@ -954,8 +1260,9 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
                 'type': OraDownloadData.ATTACHMENT,
                 'description': self.file_description_2,
                 'size': self.file_size_2,
-                'file_path': '{}/{}/{}/attachments/{}'.format(
-                    COURSE_ID, ITEM_ID, STUDENT_ID, self.file_name_2
+                'file_path': (
+                    f"{submission_directory}/[{ITEM_PATH_INFO['ora_index']}]"
+                    f" - {USERNAME_MAPPING[STUDENT_ID]} - {self.file_name_2}"
                 ),
             },
             {
@@ -967,8 +1274,9 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
                 'type': OraDownloadData.ATTACHMENT,
                 'description': self.file_description_3,
                 'size': self.file_size_3,
-                'file_path': '{}/{}/{}/attachments/{}'.format(
-                    COURSE_ID, ITEM_ID, STUDENT_ID, self.file_name_3
+                'file_path': (
+                    f"{submission_directory}/[{ITEM_PATH_INFO['ora_index']}]"
+                    f" - {USERNAME_MAPPING[STUDENT_ID]} - {self.file_name_3}"
                 ),
             },
             {
@@ -976,13 +1284,14 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
                 'block_id': ITEM_ID,
                 'student_id': STUDENT_ID,
                 'key': '',
-                'name': 'part_0.txt',
+                'name': 'prompt_0.txt',
                 'type': OraDownloadData.TEXT,
                 'description': 'Submission text.',
                 'content': self.answer_text,
                 'size': len(self.answer_text),
-                'file_path': '{}/{}/{}/{}'.format(
-                    COURSE_ID, ITEM_ID, STUDENT_ID, 'part_0.txt'
+                'file_path': (
+                    f"{submission_directory}/[{ITEM_PATH_INFO['ora_index']}]"
+                    f" - {USERNAME_MAPPING[STUDENT_ID]} - prompt_0.txt"
                 ),
             },
         ]
@@ -997,7 +1306,13 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
         workflow_api.create_workflow(submission_uuid, steps if steps else STEPS)
         return submission
 
-    def test_collect_ora2_submission_files(self):
+    def _override_default_answers(self):
+        """
+        _create_submission creates lightweight "dummy" submissons,
+        with an answer defined as the constant ANSWER in this file.
+        This method modifies the answer values for tests that actually
+        care about the values of the answers
+        """
         submission = sub_api._get_submission_model(self.submission['uuid'])  # pylint: disable=protected-access
         submission.answer = self.answer
         submission.save()
@@ -1018,13 +1333,54 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
         scorer_submission = sub_api._get_submission_model(  # pylint: disable=protected-access
             self.scorer_submission['uuid']
         )
-        scorer_submission.answer = {}
+        scorer_submission.answer = {'parts': []}
         scorer_submission.save()
 
+    @patch(
+        'openassessment.data.OraDownloadData._map_ora_usage_keys_to_path_info',
+        Mock(return_value={ITEM_ID: ITEM_PATH_INFO})
+    )
+    @patch(
+        'openassessment.data.OraDownloadData._map_student_ids_to_path_ids',
+        Mock(return_value=USERNAME_MAPPING)
+    )
+    def test_collect_ora2_submission_files(self):
+        """
+        Test that `collect_ora2_submission_files` returns correct set of
+        submission texts and attachments for a given course.
+        """
+        self._override_default_answers()
         collected_ora_files_data = list(OraDownloadData.collect_ora2_submission_files(COURSE_ID))
         assert collected_ora_files_data == self.submission_files_data
 
+    @patch(
+        'openassessment.data.OraDownloadData._map_ora_usage_keys_to_path_info',
+        Mock(return_value={ITEM_ID: ITEM_PATH_INFO})
+    )
+    def test_collect_ora2_submission_files__no_user(self):
+        """
+        Test for behavior when a user isn't included in the username map
+        """
+        self._override_default_answers()
+        username_mapping_no_default_student = USERNAME_MAPPING.copy()
+        del username_mapping_no_default_student[STUDENT_ID]
+
+        with patch('openassessment.data.OraDownloadData._map_student_ids_to_path_ids') as mock_map_student_ids:
+            mock_map_student_ids.return_value = username_mapping_no_default_student
+            collected_ora_files_data = list(OraDownloadData.collect_ora2_submission_files(COURSE_ID))
+
+        expected_files = [
+            expected_file for expected_file in self.submission_files_data
+            if expected_file.get('student_id') != STUDENT_ID
+        ]
+        assert collected_ora_files_data == expected_files
+
     def test_create_zip_with_attachments(self):
+        """
+        Test that ZIP file generated by `create_zip_with_attachments` contains
+        correct files and their paths are also correct.
+        """
+
         file = BytesIO()
 
         file_content = b'file_content'
@@ -1032,7 +1388,7 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
         with patch(
             'openassessment.data.OraDownloadData._download_file_by_key', return_value=file_content
         ) as download_mock:
-            OraDownloadData.create_zip_with_attachments(file, COURSE_ID, self.submission_files_data)
+            OraDownloadData.create_zip_with_attachments(file, self.submission_files_data)
 
             download_mock.assert_has_calls([
                 call(self.file_key_5),
@@ -1042,46 +1398,457 @@ class TestOraDownloadDataIntegration(TransactionCacheResetTest):
                 call(self.file_key_3),
             ])
 
-        zip_file = zipfile.ZipFile(file)
+        with zipfile.ZipFile(file) as zip_file:
 
-        # archive should contain five attachments, three parts text file and one csv
-        self.assertEqual(len(zip_file.infolist()), 9)
+            # archive should contain five attachments, three parts text file and one csv
+            self.assertEqual(len(zip_file.infolist()), 9)
 
-        # check for pre_file_name_user's file and text
-        self.assertEqual(
-            zip_file.read(self.submission_files_data[0]['file_path']),
-            file_content
+            def get_filepath(submission_index):
+                # pylint: disable=protected-access
+                return OraDownloadData._submission_filepath(
+                    ITEM_PATH_INFO,
+                    USERNAME_MAPPING[self.submission_files_data[submission_index]['student_id']],
+                    self.submission_files_data[submission_index]['name'],
+                )
+
+            # check for pre_file_name_user's file and text
+            self.assertEqual(
+                zip_file.read(get_filepath(0)), file_content
+            )
+            self.assertEqual(
+                zip_file.read(get_filepath(1)), self.answer_text.encode('utf-8')
+            )
+            # check for pre_file_size_user's file and text
+            self.assertEqual(
+                zip_file.read(get_filepath(2)), file_content
+            )
+            self.assertEqual(
+                zip_file.read(get_filepath(3)), self.answer_text.encode('utf-8')
+            )
+            # check that main user's attachments have been written to the archive
+            self.assertEqual(
+                zip_file.read(get_filepath(4)), file_content
+            )
+            self.assertEqual(
+                zip_file.read(get_filepath(5)), file_content
+            )
+            self.assertEqual(
+                zip_file.read(get_filepath(6)), file_content
+            )
+            # main user's text response
+            self.assertEqual(
+                zip_file.read(get_filepath(7)), self.answer_text.encode('utf-8')
+            )
+
+            self.assertTrue(zip_file.read('submissions.csv'))
+
+    def test_csv_file_for_create_zip_with_attachments(self):
+        file = BytesIO()
+
+        file_content = b'file_content'
+
+        with patch('openassessment.data.OraDownloadData._download_file_by_key', return_value=file_content):
+            OraDownloadData.create_zip_with_attachments(file, self.submission_files_data)
+
+        with zipfile.ZipFile(file) as zip_file:
+            self.assertTrue(zip_file.read('submissions.csv'))
+
+            with zip_file.open('submissions.csv') as csv_file:
+                csv_reader = csv.DictReader(TextIOWrapper(csv_file, 'utf-8'))
+                for row in csv_reader:
+                    # csv file contains OraDownloadData.SUBMISSIONS_CSV_HEADER
+                    for column in OraDownloadData.SUBMISSIONS_CSV_HEADER:
+                        # prove that all column exist
+                        self.assertIn(column, row)
+                    # file_found column is True for all of them
+                    self.assertEqual(row['file_found'], 'True')
+                    # all those file exist in the zipfile
+                    self.assertTrue(zipfile.Path(zip_file, row['file_path']).exists())
+
+    def test_create_zip_with_failed_attachments(self):
+        file = BytesIO()
+
+        with patch(
+            'openassessment.data.OraDownloadData._download_file_by_key'
+        ) as download_mock:
+            download_mock.side_effect = FileMissingException
+            OraDownloadData.create_zip_with_attachments(file, self.submission_files_data)
+
+            download_mock.assert_has_calls([
+                call(self.file_key_5),
+                call(self.file_key_4),
+                call(self.file_key_1),
+                call(self.file_key_2),
+                call(self.file_key_3),
+            ])
+
+        with zipfile.ZipFile(file) as zip_file:
+            # archive should contain only three parts text file and one csv because all of the attachments are invalid
+            self.assertEqual(len(zip_file.infolist()), 4)
+
+            # expect text file found in the zip file
+            self.assertTrue(zipfile.Path(zip_file, self.submission_files_data[1]['file_path']).exists())
+            self.assertTrue(zipfile.Path(zip_file, self.submission_files_data[3]['file_path']).exists())
+            self.assertTrue(zipfile.Path(zip_file, self.submission_files_data[7]['file_path']).exists())
+
+            # check for pre_file_name_user's text file
+            self.assertEqual(
+                zip_file.read(self.submission_files_data[1]['file_path']),
+                self.answer_text.encode('utf-8')
+            )
+            self.assertEqual(
+                zip_file.read(self.submission_files_data[3]['file_path']),
+                self.answer_text.encode('utf-8')
+            )
+
+            # main user's text response
+            self.assertEqual(
+                zip_file.read(self.submission_files_data[7]['file_path']),
+                self.answer_text.encode('utf-8')
+            )
+
+            # expect file not found in the zip file
+            self.assertFalse(zipfile.Path(zip_file, self.submission_files_data[0]['file_path']).exists())
+            self.assertFalse(zipfile.Path(zip_file, self.submission_files_data[2]['file_path']).exists())
+            self.assertFalse(zipfile.Path(zip_file, self.submission_files_data[4]['file_path']).exists())
+            self.assertFalse(zipfile.Path(zip_file, self.submission_files_data[6]['file_path']).exists())
+
+    def test_csv_file_for_create_zip_with_failed_attachments(self):
+        file = BytesIO()
+
+        with patch(
+            'openassessment.data.OraDownloadData._download_file_by_key'
+        ) as download_mock:
+            download_mock.side_effect = FileMissingException
+            OraDownloadData.create_zip_with_attachments(file, self.submission_files_data)
+
+        with zipfile.ZipFile(file) as zip_file:
+            self.assertTrue(zip_file.read('submissions.csv'))
+
+            with zip_file.open('submissions.csv') as csv_file:
+                csv_reader = csv.DictReader(TextIOWrapper(csv_file, 'utf-8'))
+                for row in csv_reader:
+                    # csv file contains OraDownloadData.SUBMISSIONS_CSV_HEADER
+                    for column in OraDownloadData.SUBMISSIONS_CSV_HEADER:
+                        # prove that all column exist
+                        self.assertIn(column, row)
+                    # csv and data in the zip file are consistence
+                    if row['file_found'] == 'False':
+                        self.assertFalse(zipfile.Path(zip_file, row['file_path']).exists())
+                    else:
+                        self.assertTrue(zipfile.Path(zip_file, row['file_path']).exists())
+
+    @ddt.data(
+        (
+            "Section",
+            "Sub Section",
+            "Unit",
+            "test.jpg",
+            "username",
+            "[1]Section, [1]Sub Section, [1]Unit/[1] - username - test.jpg",
+        ),
+        (
+            "Section",
+            "x" * 1000,
+            "Unit",
+            "test.jpg",
+            "username",
+            # subsection name truncated
+            f"[1]Section, [1]{'x' * 231}, [1]Unit/[1] - username - test.jpg",
+        ),
+        (
+            "Section",
+            "x" * 1000,
+            "y" * 1000,
+            "test.jpg",
+            "username",
+            # subsection name removed, unit name truncated
+            f"[1]Section, [1], [1]{'y' * 235}/[1] - username - test.jpg",
+        ),
+        (
+            "z" * 1000,
+            "x" * 1000,
+            "y" * 1000,
+            "test.jpg",
+            "username",
+            # everything removed, section name truncated
+            f"[1]{'z' * 242}, [1], [1]/[1] - username - test.jpg",
+        ),
+        (
+            "Section",
+            "Sub Section",
+            "Unit",
+            f"{'x' * 251}.jpg",
+            "username",
+            # filename base truncated
+            f"[1]Section, [1]Sub Section, [1]Unit/[1] - username - {'x' * 234}.jpg",
+        ),
+    )
+    @ddt.unpack
+    def test_truncation_of_submission_filepath(
+        self, section_name, sub_section_name, unit_name, file_name, username, file_path
+    ):
+        """
+        Test that `_submission_filepath` truncates less important data first and keeps
+        file name less than 255.
+        """
+
+        path_info = {
+            "section_index": 1,
+            "section_name": section_name,
+            "sub_section_index": 1,
+            "sub_section_name": sub_section_name,
+            "unit_index": 1,
+            "unit_name": unit_name,
+            "ora_index": 1,
+            "ora_name": ITEM_DISPLAY_NAME,
+        }
+        # pylint: disable=protected-access
+        assert OraDownloadData._submission_filepath(path_info, username, file_name) == file_path
+
+
+submission_test_parts = [{'text': 'text_response_' + str(i)} for i in range(3)]
+submission_test_file_keys = ['test-key-' + str(i) for i in range(3)]
+submission_test_file_names = ['test-name-' + str(i) for i in range(3)]
+submission_test_file_descriptions = ['Description for file ' + str(i) for i in range(3)]
+submission_test_file_sizes = list(range(3))
+
+version_1_submission_answer = {
+    'file_key': 'test-key-0',
+    'parts': submission_test_parts
+}
+version_2_submission_answer = {
+    'file_keys': submission_test_file_keys,
+    'files_descriptions': submission_test_file_descriptions,
+    'parts': submission_test_parts
+}
+version_3_submission_answer = {
+    'file_keys': submission_test_file_keys,
+    'files_descriptions': submission_test_file_descriptions,
+    'files_name': submission_test_file_names,
+    'parts': submission_test_parts
+}
+version_4_submission_answer = {
+    'file_keys': submission_test_file_keys,
+    'files_descriptions': submission_test_file_descriptions,
+    'files_name': submission_test_file_names,
+    'files_sizes': submission_test_file_sizes,
+    'parts': submission_test_parts
+}
+version_5_submission_answer = {
+    'file_keys': submission_test_file_keys,
+    'files_descriptions': submission_test_file_descriptions,
+    'files_names': submission_test_file_names,
+    'files_sizes': submission_test_file_sizes,
+    'parts': submission_test_parts
+}
+all_version_submission_answers = [
+    version_1_submission_answer,
+    version_2_submission_answer,
+    version_3_submission_answer,
+    version_4_submission_answer,
+    version_5_submission_answer
+]
+unknown_submission_answer = {'color': 'Bronze Mist Metallic', 'year': 2002, 'make': 'Chevrolet', 'model': 'Tracker'}
+text_only_submission_answer = {'parts': submission_test_parts}
+
+
+class SubmissionFileUploadTest(TestCase):
+    """ Unit tests for SubmissionFileUpload """
+    KEY = 'test-key'
+
+    def test_default_values(self):
+        upload = SubmissionFileUpload(self.KEY)
+        self.assertEqual(upload.name, SubmissionFileUpload.generate_name_from_key(self.KEY))
+        self.assertEqual(upload.description, SubmissionFileUpload.DEFAULT_DESCRIPTION)
+        self.assertEqual(upload.size, 0)
+
+
+class OraSubmissionAnswerFactoryTest(TestCase):
+    """ Unit tests for OraSubmissionAnswerFactory """
+
+    def test_parse_submission_raw_answer__text_only(self):
+        submission = OraSubmissionAnswerFactory.parse_submission_raw_answer(
+            {'parts': submission_test_parts}
         )
-        self.assertEqual(
-            zip_file.read(self.submission_files_data[1]['file_path']),
-            self.answer_text.encode('utf-8')
+        self.assertTrue(isinstance(submission, OraSubmissionAnswer))
+        self.assertTrue(isinstance(submission, TextOnlySubmissionAnswer))
+
+    def test_parse_submission_raw_answer__zipped_list_submission(self):
+        submission = OraSubmissionAnswerFactory.parse_submission_raw_answer(
+            version_1_submission_answer
         )
-        # check for pre_file_size_user's file and text
+        self.assertTrue(isinstance(submission, OraSubmissionAnswer))
+        self.assertTrue(isinstance(submission, ZippedListSubmissionAnswer))
+
+    def test_parse_submission_raw_answer__unknown(self):
+        with self.assertRaisesMessage(VersionNotFoundException, "No ORA Submission Answer version recognized"):
+            OraSubmissionAnswerFactory.parse_submission_raw_answer(unknown_submission_answer)
+
+
+@ddt.ddt
+class TextOnlySubmissionAnswerTest(TestCase):
+    """ Unit tests for TextOnlySubmissionAnswer """
+    @ddt.unpack
+    @ddt.data(
+        (version_1_submission_answer, False),
+        (version_2_submission_answer, False),
+        (version_3_submission_answer, False),
+        (version_4_submission_answer, False),
+        (version_5_submission_answer, False),
+        (text_only_submission_answer, True),
+        (unknown_submission_answer, False),
+    )
+    def test_matches(self, submission, should_match):
+        self.assertEqual(TextOnlySubmissionAnswer.matches(submission), should_match)
+
+    def test_get_responses(self):
+        submission = TextOnlySubmissionAnswer(text_only_submission_answer)
+        text_responses = submission.get_text_responses()
+        self.assertEqual(len(text_responses), 3)
+        for i, text_response in enumerate(text_responses):
+            self.assertEqual(text_response, f'text_response_{i}')
+        self.assertEqual(submission.get_file_uploads(), [])
+
+
+@ddt.ddt
+class ZippedListSubmissionAnswerTest(TestCase):
+    """ Unit tests for ZippedListSubmissionAnswer """
+
+    @ddt.unpack
+    @ddt.data(
+        (version_1_submission_answer, True),
+        (version_2_submission_answer, True),
+        (version_3_submission_answer, True),
+        (version_4_submission_answer, True),
+        (version_5_submission_answer, True),
+        (text_only_submission_answer, False),
+        (unknown_submission_answer, False),
+    )
+    def test_matches(self, submission, should_match):
+        self.assertEqual(ZippedListSubmissionAnswer.matches(submission), should_match)
+
+    @ddt.data(
+        (version_1_submission_answer, 1),
+        (version_2_submission_answer, 2),
+        (version_3_submission_answer, 3),
+        (version_4_submission_answer, 4),
+        (version_5_submission_answer, 5),
+    )
+    @ddt.unpack
+    def test_does_version_match(self, raw_answer, version):
+        version = ZIPPED_LIST_SUBMISSION_VERSIONS[version - 1]
+        # Keys from submission should match version
+        raw_answer_keys = set(raw_answer.keys())
+        self.assertTrue(ZippedListSubmissionAnswer.does_version_match(raw_answer_keys, version))
+        # Missing 'parts' should still match version
+        raw_answer_keys.remove('parts')
+        self.assertTrue(ZippedListSubmissionAnswer.does_version_match(raw_answer_keys, version))
+        # Unrecognized keys should not match.
+        raw_answer_keys.add('something_else')
+        self.assertFalse(ZippedListSubmissionAnswer.does_version_match(raw_answer_keys, version))
+        # No other version answer should match this version
+        all_other_version_answers = [answer for answer in all_version_submission_answers if answer is not raw_answer]
+        for other_version_raw_answer in all_other_version_answers:
+            self.assertFalse(
+                ZippedListSubmissionAnswer.does_version_match(
+                    set(other_version_raw_answer.keys()),
+                    version
+                )
+            )
+
+    @ddt.data(
+        (version_1_submission_answer, 1),
+        (version_2_submission_answer, 2),
+        (version_3_submission_answer, 3),
+        (version_4_submission_answer, 4),
+        (version_5_submission_answer, 5),
+    )
+    @ddt.unpack
+    def test_get_version(self, submission, version):
         self.assertEqual(
-            zip_file.read(self.submission_files_data[2]['file_path']),
-            file_content
-        )
-        self.assertEqual(
-            zip_file.read(self.submission_files_data[3]['file_path']),
-            self.answer_text.encode('utf-8')
-        )
-        # check that main user's attachments have been written to the archive
-        self.assertEqual(
-            zip_file.read(self.submission_files_data[4]['file_path']),
-            file_content
-        )
-        self.assertEqual(
-            zip_file.read(self.submission_files_data[5]['file_path']),
-            file_content
-        )
-        self.assertEqual(
-            zip_file.read(self.submission_files_data[6]['file_path']),
-            file_content
-        )
-        # main user's text response
-        self.assertEqual(
-            zip_file.read(self.submission_files_data[7]['file_path']),
-            self.answer_text.encode('utf-8')
+            ZippedListSubmissionAnswer.get_version(submission),
+            ZIPPED_LIST_SUBMISSION_VERSIONS[version - 1]  # Adjusted version -> index
         )
 
-        self.assertTrue(zip_file.read(os.path.join(COURSE_ID, 'downloads.csv')))
+    def test_get_version_not_found(self):
+        """ Test that a non-recognized submission version will raise an exception """
+        with self.assertRaisesMessage(VersionNotFoundException, "No zipped list version found with keys"):
+            ZippedListSubmissionAnswer.get_version(unknown_submission_answer)
+
+    @ddt.data(*all_version_submission_answers)
+    def test_get_submission_values(self, raw_submission):
+        """
+        Test that the files are parsed from the submission correctly
+        """
+        submission = ZippedListSubmissionAnswer(raw_submission)
+        self.assertEqual(
+            submission.get_text_responses(),
+            ['text_response_0', 'text_response_1', 'text_response_2']
+        )
+        file_uploads = submission.get_file_uploads()
+        if raw_submission == version_1_submission_answer:
+            self.assertEqual(len(file_uploads), 1)
+        else:
+            self.assertEqual(len(file_uploads), 3)
+
+        for i, file_upload in enumerate(file_uploads):
+            self.assertTrue(isinstance(file_upload, SubmissionFileUpload))
+            self.assertEqual(file_upload.key, submission_test_file_keys[i])
+            self.assertEqual(
+                file_upload.name,
+                submission_test_file_names[i] if submission.version.name
+                else SubmissionFileUpload.generate_name_from_key(file_upload.key)
+            )
+            self.assertEqual(
+                file_upload.description,
+                submission_test_file_descriptions[i] if submission.version.description
+                else SubmissionFileUpload.DEFAULT_DESCRIPTION
+            )
+            self.assertEqual(
+                file_upload.size,
+                submission_test_file_sizes[i] if submission.version.size else 0
+            )
+
+    @ddt.data(True, False)
+    def test_get_file_uploads_empty_fields(self, missing_blank):
+        """ Test that for submissions with missing data, files can still be parsed correctly """
+        # Submission with no descriptions. The key will exist, but it will be an empty list
+        version_5 = ZIPPED_LIST_SUBMISSION_VERSIONS[4]
+        no_description_submission = deepcopy(version_5_submission_answer)
+        no_description_submission[version_5.description] = []
+
+        submission = ZippedListSubmissionAnswer(no_description_submission)
+        self.assertEqual(submission.version, version_5)
+
+        file_uploads = submission.get_file_uploads(missing_blank=missing_blank)
+        self.assertEqual(len(file_uploads), 3)
+        for i, file_upload in enumerate(file_uploads):
+            self.assertEqual(file_upload.key, submission_test_file_keys[i])
+            self.assertEqual(file_upload.name, submission_test_file_names[i])
+            self.assertEqual(
+                file_upload.description,
+                '' if missing_blank else SubmissionFileUpload.DEFAULT_DESCRIPTION
+            )
+            self.assertEqual(file_upload.size, submission_test_file_sizes[i])
+
+    def test_get_file_uploads_misaligned_fields(self):
+        """ Test that for submissions with missing data, files can still be parsed correctly """
+        # Submission with only one file name
+        version_5 = ZIPPED_LIST_SUBMISSION_VERSIONS[4]
+        misaligned_names_submission = deepcopy(version_5_submission_answer)
+        misaligned_names_submission[version_5.name].pop()
+
+        submission = ZippedListSubmissionAnswer(misaligned_names_submission)
+        self.assertEqual(submission.version, version_5)
+
+        file_uploads = submission.get_file_uploads()
+        self.assertEqual(len(file_uploads), 3)
+        for i, file_upload in enumerate(file_uploads):
+            self.assertEqual(file_upload.key, submission_test_file_keys[i])
+            if i == 2:
+                self.assertEqual(file_upload.name, SubmissionFileUpload.generate_name_from_key(file_upload.key))
+            else:
+                self.assertEqual(file_upload.name, submission_test_file_names[i])
+            self.assertEqual(file_upload.description, submission_test_file_descriptions[i])
+            self.assertEqual(file_upload.size, submission_test_file_sizes[i])

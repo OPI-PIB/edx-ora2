@@ -10,6 +10,9 @@ import MessageView from './oa_message';
 import StaffAreaView from './oa_staff_area';
 import StudentTrainingView from './oa_training';
 import PeerView from './oa_peer';
+import ResponseEditorLoader from './oa_response_editor';
+import renderWaitingStepDetailsView from './oa_staff_waiting_step';
+
 /**
 Interface for student-facing views.
 
@@ -41,16 +44,20 @@ export class BaseView {
       this.server = server;
       this.fileUploader = new FileUploader();
 
-      this.responseView = new ResponseView(this.element, this.server, this.fileUploader, this, data);
-      this.trainingView = new StudentTrainingView(this.element, this.server, this);
-      this.selfView = new SelfView(this.element, this.server, this);
-      this.peerView = new PeerView(this.element, this.server, this);
+      this.responseEditorLoader = new ResponseEditorLoader(data.AVAILABLE_EDITORS);
+
+      this.responseView = new ResponseView(
+        this.element, this.server, this.fileUploader, this.responseEditorLoader, this, data,
+      );
+      this.trainingView = new StudentTrainingView(this.element, this.server, this.responseEditorLoader, data, this);
+      this.selfView = new SelfView(this.element, this.server, this.responseEditorLoader, data, this);
+      this.peerView = new PeerView(this.element, this.server, this.responseEditorLoader, data, this);
       this.staffView = new StaffView(this.element, this.server, this);
-      this.gradeView = new GradeView(this.element, this.server, this);
-      this.leaderboardView = new LeaderboardView(this.element, this.server, this);
+      this.gradeView = new GradeView(this.element, this.server, this.responseEditorLoader, data, this);
+      this.leaderboardView = new LeaderboardView(this.element, this.server, this.responseEditorLoader, data, this);
       this.messageView = new MessageView(this.element, this.server, this);
       // Staff-only area with information and tools for managing student submissions
-      this.staffAreaView = new StaffAreaView(this.element, this.server, this);
+      this.staffAreaView = new StaffAreaView(this.element, this.server, this.responseEditorLoader, data, this);
       this.usageID = '';
       this.srStatusUpdates = [];
 
@@ -430,7 +437,7 @@ export const OpenAssessmentBlock = (runtime, element, data) => {
 /* jshint unused:false */
 // eslint-disable-next-line no-unused-vars
 export const CourseOpenResponsesListingBlock = (runtime, element, data) => {
-  const view = new CourseItemsListingView(runtime, element);
+  const view = new CourseItemsListingView(runtime, element, data);
   view.refreshGrids();
 };
 
@@ -444,6 +451,18 @@ export const StaffAssessmentBlock = (runtime, element, data) => {
   const server = new Server(runtime, element);
   const view = new BaseView(runtime, element, server, data);
   view.staffAreaView.installHandlers();
+};
+
+/* XBlock JavaScript entry point for OpenAssessmentXBlock. */
+/* jshint unused:false */
+// eslint-disable-next-line no-unused-vars
+export const WaitingStepDetailsBlock = (runtime, element, data) => {
+  /**
+    Render auxiliary view which displays the staff grading area
+  * */
+  const server = new Server(runtime, element);
+  const baseView = new BaseView(runtime, element, server, data);
+  renderWaitingStepDetailsView(baseView, data);
 };
 
 export default BaseView;

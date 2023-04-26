@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 Tests for the staff area.
 """
@@ -6,9 +5,10 @@ Tests for the staff area.
 
 from collections import namedtuple
 import json
-
 import urllib
+
 import ddt
+from django.test.utils import override_settings
 from mock import MagicMock, Mock, PropertyMock, call, patch
 from testfixtures import log_capture
 
@@ -54,7 +54,7 @@ TEAMMATE_ITEM = dict(
 )
 
 ASSESSMENT_DICT = {
-    'overall_feedback': u"这是中国",
+    'overall_feedback': "这是中国",
     'options_selected': {
         "Concise": "Robert Heinlein",
         "Clear-headed": "Yogi Berra",
@@ -98,8 +98,8 @@ class UserStateService:
         Returns a default state regardless of any passed params.
         """
         return {
-            u'saved_files_descriptions': json.dumps(SAVED_FILES_DESCRIPTIONS),
-            u'saved_files_names': json.dumps(SAVED_FILES_NAMES)
+            'saved_files_descriptions': json.dumps(SAVED_FILES_DESCRIPTIONS),
+            'saved_files_names': json.dumps(SAVED_FILES_NAMES)
         }
 
 
@@ -139,6 +139,43 @@ class TestCourseStaff(XBlockHandlerTestCase):
         self.assertIn("view assignment statistics", resp.decode('utf-8').lower())
 
     @scenario('data/basic_scenario.xml', user_id='Bob')
+    def test_view_in_studio_button(self, xblock):
+        xblock.xmodule_runtime = self._create_mock_runtime(
+            xblock.scope_ids.usage_id, False, False, "Bob"
+        )
+
+        # If we are not course staff,then we should NOT see the studio link
+        resp = self.request(xblock, 'render_staff_area', json.dumps({}))
+        self.assertNotIn("view ora in studio", resp.decode('utf-8').lower())
+
+        # If we ARE course staff, then we should see the studio link
+        xblock.xmodule_runtime.user_is_staff = True
+        resp = self.request(xblock, 'render_staff_area', json.dumps({}))
+        self.assertIn("view ora in studio", resp.decode('utf-8').lower())
+
+    @override_settings(
+        HTTPS='on',
+        CMS_BASE="studio",
+    )
+    @scenario('data/basic_scenario.xml', user_id='Bob')
+    def test_get_studio_url(self, xblock):
+        # Given we are staff viewing an ORA
+        xblock.xmodule_runtime = self._create_mock_runtime(
+            xblock.scope_ids.usage_id, True, False, "Bob"
+        )
+
+        # Mock the location of the vertical, returned when we run str(block)
+        xblock.parent = 'vertical-location'
+
+        # When I get context for the staff area
+        _, context = xblock.get_staff_path_and_context()
+
+        # Then I get the appropriate URL for studio
+        expectedUrl = 'https://studio/container/vertical-location'
+        self.assertIn('studio_edit_url', context)
+        self.assertEqual(expectedUrl, context['studio_edit_url'])
+
+    @scenario('data/basic_scenario.xml', user_id='Bob')
     def test_course_student_debug_info(self, xblock):
         # If we're not course staff, we shouldn't see the debug info
         xblock.xmodule_runtime = self._create_mock_runtime(
@@ -168,7 +205,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
 
         # The container page should not contain a staff info section at all
         xblock_fragment = self.runtime.render(xblock, 'student_view')
-        self.assertNotIn(u'staff-info', xblock_fragment.body_html())
+        self.assertNotIn('staff-info', xblock_fragment.body_html())
 
     @scenario('data/staff_dates_scenario.xml', user_id='Bob')
     def test_staff_area_dates_table(self, xblock):
@@ -241,7 +278,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
         peer_api.create_assessment(
             submission["uuid"],
             STUDENT_ITEM["student_id"],
-            ASSESSMENT_DICT['options_selected'], dict(), "",
+            ASSESSMENT_DICT['options_selected'], {}, "",
             {'criteria': xblock.rubric_criteria},
             1,
         )
@@ -463,6 +500,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
                     'download_url': 'http://www.example.com/image.jpeg',
                     'description': 'test_description',
                     'name': 'test_fileName',
+                    'size': 0,
                     'show_delete_button': False
                 }],
                 context['staff_file_urls']
@@ -524,6 +562,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
                     "download_url": image,
                     "description": "test_description%d" % i,
                     "name": "fname%d" % i,
+                    "size": 0,
                     "show_delete_button": False
                 } for i, image in enumerate(images)],
                 context['staff_file_urls']
@@ -551,7 +590,8 @@ class TestCourseStaff(XBlockHandlerTestCase):
         # Create an image submission for Bob, and corresponding workflow.
         self._create_submission(bob_item, {
             'text': "Bob Answer",
-            'file_keys': ["test_key"]
+            'file_keys': ["test_key"],
+            'files_descriptions': []
         }, ['self'])
 
         # Mock the file upload API to simulate an error
@@ -578,13 +618,13 @@ class TestCourseStaff(XBlockHandlerTestCase):
 
         # Commonly chosen options for assessments
         options_selected = {
-            u"𝓒𝓸𝓷𝓬𝓲𝓼𝓮": u"Ġööḋ",
-            u"Form": u"Poor",
+            "𝓒𝓸𝓷𝓬𝓲𝓼𝓮": "Ġööḋ",
+            "Form": "Poor",
         }
 
         criterion_feedback = {
-            u"𝓒𝓸𝓷𝓬𝓲𝓼𝓮": u"Dear diary: Lots of creativity from my dream journal last night at 2 AM,",
-            u"Form": u"Not as insightful as I had thought in the wee hours of the morning!"
+            "𝓒𝓸𝓷𝓬𝓲𝓼𝓮": "Dear diary: Lots of creativity from my dream journal last night at 2 AM,",
+            "Form": "Not as insightful as I had thought in the wee hours of the morning!"
         }
 
         overall_feedback = "I think I should tell more people about how important worms are for the ecosystem."
@@ -605,7 +645,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
         peer_api.create_assessment(
             submission["uuid"],
             STUDENT_ITEM["student_id"],
-            options_selected, dict(), "",
+            options_selected, {}, "",
             {'criteria': xblock.rubric_criteria},
             1,
         )
@@ -720,7 +760,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
         status_counts, total_submissions = xblock.get_team_workflow_status_counts()
         self.assertEqual(total_submissions, 1)
         status_counts = self._parse_workflow_status_counts(status_counts)
-        self.assertEqual(status_counts['teams'], 1)
+        self.assertEqual(status_counts['waiting'], 1)
 
         # The staff area student context should not include a workflow cancellation
         _, context = xblock.get_student_info_path_and_context(MOCK_TEAM_MEMBER_STUDENT_IDS[0])
@@ -781,6 +821,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
         Verify the staff assessment counts (ungraded and checked out)
         as shown in the staff grading tool when staff assessment is required.
         """
+        xblock.is_enhanced_staff_grader_enabled = False
         _, context = xblock.get_staff_path_and_context()
         self._verify_staff_assessment_context(context, True, 0, 0)
 
@@ -862,8 +903,8 @@ class TestCourseStaff(XBlockHandlerTestCase):
         self._setup_xblock_and_create_submission(xblock)
 
         team_submission_enabled = 'data-team-submission="True"'
-        team_name_query = 'data-team-name="{}"'.format(MOCK_TEAM_NAME)
-        team_usernames_query = 'data-team-usernames="{}"'.format(MOCK_TEAM_MEMBER_USERNAMES_CONV)
+        team_name_query = f'data-team-name="{MOCK_TEAM_NAME}"'
+        team_usernames_query = f'data-team-usernames="{MOCK_TEAM_MEMBER_USERNAMES_CONV}"'
 
         resp = self.request(xblock, 'render_staff_grade_form', json.dumps({})).decode('utf-8')
         self.assertIn(team_submission_enabled, resp)
@@ -952,7 +993,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
         status_counts, total_submissions = xblock.get_team_workflow_status_counts()
         self.assertEqual(total_submissions, 1)
         status_counts = self._parse_workflow_status_counts(status_counts)
-        self.assertEqual(status_counts['teams'], 1)
+        self.assertEqual(status_counts['waiting'], 1)
 
         # When I clear the team's state
         xblock.clear_student_state(
@@ -1042,6 +1083,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
                         'download_url': FILE_URL,
                         'description': SAVED_FILES_DESCRIPTIONS[count],
                         'name': SAVED_FILES_NAMES[count],
+                        'size': None,
                         'show_delete_button': False
                     }
                 )
@@ -1116,6 +1158,89 @@ class TestCourseStaff(XBlockHandlerTestCase):
         self.assertFalse(context['is_team_assignment'])
         self.assertIsNone(context['team_name'])
 
+    @patch('openassessment.data.map_anonymized_ids_to_usernames')
+    @scenario('data/peer_assessment_scenario.xml', user_id='Bob')
+    def test_waiting_step_details_api(self, xblock, username_map_patch):
+        """
+        Test the waiting step details JSON API response.
+        """
+        # Set mocks
+        xblock.xmodule_runtime = Mock(user_is_staff=True)
+        username_map_patch.return_value = {"Bob": "bob_username"}
+
+        # Make a submission, but no peer assessments available
+        self._setup_xblock_and_create_submission(xblock)
+
+        # Retrieve waiting step details
+        resp = self.request(xblock, 'waiting_step_data', json.dumps({}))
+        waiting_step_details = json.loads(resp.decode('utf-8'))
+
+        # Check the response
+        self.assertCountEqual(
+            waiting_step_details.keys(),
+            [
+                'display_name',
+                'must_grade',
+                'must_be_graded_by',
+                'student_data',
+                'overwritten_count',
+                'waiting_count'
+            ],
+        )
+        # Only a single student is waiting
+        self.assertEqual(len(waiting_step_details['student_data']), 1)
+        self.assertEqual(waiting_step_details['waiting_count'], 1)
+        self.assertEqual(waiting_step_details['overwritten_count'], 0)
+        # Check the response dict
+        self.assertCountEqual(
+            waiting_step_details['student_data'][0].keys(),
+            [
+                'student_id',
+                'graded',
+                'graded_by',
+                'submission_uuid',
+                'username',
+                'staff_grade_status',
+                'workflow_status',
+                'created_at',
+            ],
+        )
+        # Check that the username was correctly mapped
+        self.assertEqual(
+            waiting_step_details['student_data'][0]['username'],
+            "bob_username"
+        )
+
+    @patch('openassessment.data.map_anonymized_ids_to_usernames')
+    @scenario('data/basic_scenario.xml', user_id='Bob')
+    def test_waiting_step_details_api_no_permission(self, xblock, username_map_patch):
+        """
+        Check that only staff users can use the waiting step details API.
+        """
+        username_map_patch.return_value = {}
+
+        # If user is not staff, API is not available
+        xblock.xmodule_runtime = Mock(user_is_staff=False)
+        resp = self.request(xblock, 'waiting_step_data', json.dumps({}))
+        self.assertIn("you do not have permission", resp.decode('utf-8').lower())
+
+        # If it's course staff then display API results
+        xblock.xmodule_runtime.user_is_staff = True
+        resp = self.request(xblock, 'waiting_step_data', json.dumps({}))
+        body = json.loads(resp.decode('utf-8'))
+
+        self.assertCountEqual(
+            body.keys(),
+            [
+                'display_name',
+                'must_grade',
+                'must_be_graded_by',
+                'student_data',
+                'overwritten_count',
+                'waiting_count'
+            ],
+        )
+
     @scenario('data/team_submission.xml', user_id='StaffMember')
     def test_staff_area_student_info__different_team(self, xblock):
         """
@@ -1167,6 +1292,49 @@ class TestCourseStaff(XBlockHandlerTestCase):
             set(expected_usernames)
         )
 
+    @scenario('data/basic_scenario.xml', user_id='Bob')
+    @patch(
+        'openassessment.xblock.config_mixin.ConfigMixin.is_enhanced_staff_grader_enabled',
+        new_callable=PropertyMock
+    )
+    def test_staff_area_esg_on_staff_assessment_is_not_required(self, xblock, mock_esg_flag):
+        """
+        When staff_assessment_required is disabled, neither of esg flag
+        nor the url should be defined in the context.
+        """
+        mock_esg_flag.return_value = True
+        _, context = xblock.get_staff_path_and_context()
+
+        self._verify_staff_assessment_context(context, False, 0, 0)
+        mock_esg_flag.assert_not_called()
+        self.assertNotIn('is_enhanced_staff_grader_enabled', context)
+        self.assertNotIn('enhanced_staff_grader_url', context)
+
+    @override_settings(
+        ORA_GRADING_MICROFRONTEND_URL='ora_url'
+    )
+    @ddt.data(False, True)
+    @patch(
+        'openassessment.xblock.config_mixin.ConfigMixin.is_enhanced_staff_grader_enabled',
+        new_callable=PropertyMock
+    )
+    @scenario('data/staff_grade_scenario.xml', user_id='Bob')
+    def test_staff_area_esg(self, xblock, is_esg_enabled, mock_esg_flag):
+        """
+        If there is a staff step, enhanced_staff_grader_url should be
+        "ORA_GRADING_MICROFRONTEND_URL/xblock_id" whether or not ESG is enabled
+        """
+        mock_esg_flag.return_value = is_esg_enabled
+        _, context = xblock.get_staff_path_and_context()
+
+        self._verify_staff_assessment_context(context, True, 0, 0)
+        mock_esg_flag.assert_called()
+        self.assertEqual(context['is_enhanced_staff_grader_enabled'], is_esg_enabled)
+        self.assertEqual(context['enhanced_staff_grader_url'], '{esg_url}/{block_id}'.format(
+            esg_url='ora_url',
+            block_id=context['xblock_id']
+        ))
+
     @log_capture()
     @patch('openassessment.xblock.config_mixin.ConfigMixin.user_state_upload_data_enabled')
     @scenario('data/file_upload_missing_scenario.xml', user_id='Bob')
@@ -1184,7 +1352,8 @@ class TestCourseStaff(XBlockHandlerTestCase):
         self._setup_xblock_and_create_submission(xblock, **{
             'file_keys': [FILE_URL, FILE_URL],
             'files_descriptions': [SAVED_FILES_DESCRIPTIONS[1], SAVED_FILES_DESCRIPTIONS[0]],
-            'files_names': [SAVED_FILES_NAMES[1], SAVED_FILES_NAMES[0]]
+            'files_names': [SAVED_FILES_NAMES[1], SAVED_FILES_NAMES[0]],
+            'files_sizes': [],
         })
         with patch("openassessment.fileupload.api.get_download_url") as get_download_url:
             get_download_url.return_value = FILE_URL
@@ -1229,6 +1398,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
             'download_url': FILE_URL,
             'description': '',
             'name': '',
+            'size': None,
             'show_delete_button': False
         }] * xblock.MAX_FILES_COUNT
         self.assertEqual(staff_urls, expected_staff_urls)
@@ -1333,6 +1503,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
             'text': "Bob Answer",
             'file_keys': ["test_key"],
             'files_descriptions': ["test_description"],
+            'files_sizes': [],
             key: ["test_fileName"],
         }, ['self'])
 
@@ -1353,6 +1524,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
                     'download_url': 'http://www.example.com/image.jpeg',
                     'description': 'test_description',
                     'name': 'test_fileName',
+                    'size': 0,
                     'show_delete_button': False
                 }],
                 context['staff_file_urls']
@@ -1430,7 +1602,8 @@ class TestCourseStaff(XBlockHandlerTestCase):
                 'text': "Text Answer",
                 'file_keys': kwargs.get('file_keys', []),
                 'files_descriptions': kwargs.get('files_descriptions', []),
-                'files_names': kwargs.get('files_names', [])
+                'files_names': kwargs.get('files_names', []),
+                'files_sizes': kwargs.get('files_sizes', [])
             }, ['staff'])
 
     def _setup_xblock(self, xblock, anonymous_user_id='Bob', has_team=True):
@@ -1449,6 +1622,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
         usage_id = xblock.scope_ids.usage_id
         xblock.location = usage_id
         xblock.user_state_upload_data_enabled = Mock(return_value=True)
+        xblock.is_enhanced_staff_grader_enabled = False
         if xblock.teams_enabled:
             xblock.is_team_assignment = Mock(return_value=True)
             anonymous_user_ids_for_team = MOCK_TEAM_MEMBER_STUDENT_IDS
@@ -1479,7 +1653,7 @@ class TestCourseStaff(XBlockHandlerTestCase):
             (
                 'openassessment.xblock.staff_area_mixin',
                 'INFO',
-                u'Checking student module for upload info for user: {username} in block: {block}'.format(
+                'Checking student module for upload info for user: {username} in block: {block}'.format(
                     username=kwargs.get('username', 'Bob'),
                     block=kwargs.get('location')
                 )

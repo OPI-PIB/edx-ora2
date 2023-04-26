@@ -1,4 +1,6 @@
 import DateTimeFactory from './oa_datefactory';
+import ConfirmationAlert from './oa_confirmation_alert';
+import Prompts from './oa_prompts';
 
 /**
  Interface for response (submission) view.
@@ -29,13 +31,15 @@ export class ResponseView {
 
     UNSAVED_WARNING_KEY = 'learner-response';
 
-    constructor(element, server, fileUploader, baseView, data) {
+    constructor(element, server, fileUploader, responseEditorLoader, baseView, data) {
       this.element = element;
       this.server = server;
       this.fileUploader = fileUploader;
+      this.responseEditorLoader = responseEditorLoader;
       this.baseView = baseView;
       this.savedResponse = [];
       this.textResponse = 'required';
+      this.textResponseEditor = 'text';
       this.fileUploadResponse = '';
       this.files = null;
       this.filesDescriptions = [];
@@ -66,17 +70,33 @@ export class ResponseView {
           // Load the HTML and install event handlers
           $(stepID, view.element).replaceWith(html);
           view.server.renderLatex($(stepID, view.element));
-          view.installHandlers();
-          view.setAutoSaveEnabled(true);
-          view.isRendering = false;
-          view.baseView.announceStatusChangeToSRandFocus(stepID, usageID, false, view, focusID);
-          view.announceStatus = false;
-          view.dateFactory.apply();
-          view.checkSubmissionAbility();
+          view.setupPromptDisplays();
+          // First load response editor then apply other things
+          view.loadResponseEditor().then((editorController) => {
+            view.responseEditorController = editorController;
+            view.installHandlers();
+            view.setAutoSaveEnabled(true);
+            view.isRendering = false;
+            view.baseView.announceStatusChangeToSRandFocus(stepID, usageID, false, view, focusID);
+            view.announceStatus = false;
+            view.dateFactory.apply();
+            view.checkSubmissionAbility();
+          });
         },
       ).fail(() => {
         view.baseView.showLoadError('response');
       });
+    }
+
+    /**
+     * Load currently selected editor.
+     *
+     * Returns: promise
+     */
+    loadResponseEditor() {
+      const sel = $('.step--response', this.element);
+      const editorElements = sel.find('.submission__answer__part__text__value');
+      return this.responseEditorLoader.load(this.data.TEXT_RESPONSE_EDITOR, editorElements);
     }
 
     /**
@@ -92,10 +112,9 @@ export class ResponseView {
       // Install a click handler for collapse/expand
       this.baseView.setUpCollapseExpand(sel);
 
-      // Install change handler for textarea (to enable submission button)
+      // Install change handler for editor (to enable submission button)
       this.savedResponse = this.response();
-      const handleChange = function () { view.handleResponseChanged(); };
-      sel.find('.submission__answer__part__text__value').on('change keyup drop paste', handleChange);
+      this.responseEditorController.setOnChangeListener(this.handleResponseChanged.bind(this));
 
       const handlePrepareUpload = function (eventData) { view.prepareUpload(eventData.target.files, uploadType); };
       sel.find('input[type=file]').on('change', handlePrepareUpload);
@@ -109,7 +128,7 @@ export class ResponseView {
         (eventObject) => {
           // Override default form submission
           eventObject.preventDefault();
-          view.submit();
+          view.handleSubmitClicked();
         },
       );
 
@@ -138,7 +157,10 @@ export class ResponseView {
       );
 
       // Install click handlers for delete file buttons.
-      sel.find('.delete__uploaded__file').click(this.handleDeleteFileClick());
+      sel.find('.delete__uploaded__file').click((eventObject) => {
+        eventObject.preventDefault();
+        view.handleDeleteFileClick(eventObject.target);
+      });
 
       // Install a click handler to close the text response warning
       sel.find('#team_text_response_warning_closebtn').click(
@@ -147,15 +169,15 @@ export class ResponseView {
           sel.find('#team_text_response_warning').remove();
         },
       );
+      this.confirmationDialog = new ConfirmationAlert(sel.find('.step--response__dialog-confirm'));
     }
 
-    handleDeleteFileClick() {
-      const view = this;
-      return function (eventObject) {
-        eventObject.preventDefault();
-        const filenum = $(eventObject.target).attr('filenum');
-        view.removeUploadedFile(filenum);
-      };
+    /**
+     Set up prompts and attempt to resolve any unresolved Studio URLs
+     * */
+    setupPromptDisplays() {
+      this.prompts = new Prompts(this.element);
+      this.prompts.resolveStaticLinks();
     }
 
     /**
@@ -211,7 +233,8 @@ export class ResponseView {
             && !textFieldsIsNotBlank && !filesFiledIsNotBlank) {
         readyToSubmit = false;
       }
-      if (this.hasPendingUploadFiles() && !this.collectFilesDescriptions()) {
+      if (this.hasPendingUploadFiles()) {
+        this.collectFilesDescriptions();
         readyToSubmit = false;
       }
 
@@ -262,8 +285,8 @@ export class ResponseView {
      bool: Whether the button is enabled.
 
      Examples:
-     >> view.submitEnabled(true);  // enable the button
-     >> view.submitEnabled();  // check whether the button is enabled
+     >> view.saveEnabled(true);  // enable the button
+     >> view.saveEnabled();  // check whether the button is enabled
      >> true
      * */
     saveEnabled(enabled) {
@@ -313,7 +336,7 @@ export class ResponseView {
         if (file.size === 0) {
           this.baseView.toggleActionError(
             'upload',
-            gettext(`Your file ${file.name} has been deleted or path has been changed.`),
+            gettext('Your file has been deleted or path has been changed: ') + file.name,
           );
           this.submitEnabled(true);
           return false;
@@ -356,15 +379,7 @@ export class ResponseView {
      * */
     /* eslint-disable-next-line consistent-return */
     response(texts) {
-      const sel = $('.response__submission .submission__answer__part__text__value', this.element);
-      if (typeof texts === 'undefined') {
-        return sel.map(function () {
-          return $.trim($(this).val());
-        }).get();
-      }
-      sel.each(function (index) {
-        $(this).val(texts[index]);
-      });
+      return this.responseEditorController.response(texts);
     }
 
     /**
@@ -470,61 +485,47 @@ export class ResponseView {
     }
 
     /**
-     Send a response submission to the server and update the view.
+     Handler for the submit button
      * */
-    submit() {
+    handleSubmitClicked() {
       // Immediately disable the submit button to prevent multiple submission
       this.submitEnabled(false);
 
+      // Block submit if a learner has files staged for upload
+      if (this.hasPendingUploadFiles()) { return; }
+
       const view = this;
-      const { baseView } = this;
-      // eslint-disable-next-line new-cap
-      let fileDefer = $.Deferred();
+      const title = gettext('Confirm Submit Response');
+      // Keep this on one big line to avoid gettext bug: http://stackoverflow.com/a/24579117
+      // eslint-disable-next-line max-len
+      const msg = gettext('You\'re about to submit your response for this assignment. After you submit this response, you can\'t change it or submit a new response.');
+      this.confirmationDialog.confirm(
+        title,
+        msg,
+        () => view.submit(),
+        () => view.submitEnabled(true),
+      );
+    }
 
-      if (view.hasPendingUploadFiles()) {
-        if (!view.hasAllUploadFiles()) {
-          return;
-        }
-        const msg = gettext('Do you want to upload your file before submitting?');
-        if (window.confirm(msg)) {
-          fileDefer = view.uploadFiles();
-          if (fileDefer === false) {
-            return;
-          }
-        }
-      } else {
-        fileDefer.resolve();
-      }
+    /**
+     Send a response submission to the server and update the view.
+     * */
+    submit() {
+      const submission = this.response();
+      this.baseView.toggleActionError('response', null);
 
-      fileDefer
-        .pipe(() => view.confirmSubmission()
-        // On confirmation, send the submission to the server
-        // The callback returns a promise so we can attach
-        // additional callbacks after the confirmation.
-        // NOTE: in JQuery >=1.8, `pipe()` is deprecated in favor of `then()`,
-        // but we're using JQuery 1.7 in the LMS, so for now we're stuck with `pipe()`.
-          .pipe(() => {
-            const submission = view.response();
-            baseView.toggleActionError('response', null);
-
-            // Send the submission to the server, returning the promise.
-            return view.server.submit(submission);
-          }))
-
-      // If the submission was submitted successfully, move to the next step
-        .done($.proxy(view.moveToNextStep, view))
-
-      // Handle submission failure (either a server error or cancellation),
+      // Send the submission to the server
+      this.server.submit(submission)
+        .done(() => { this.moveToNextStep(); })
         .fail((errCode, errMsg) => {
-          // If the error is "multiple submissions", then we should move to the next
-          // step.  Otherwise, the user will be stuck on the current step with no
-          // way to continue.
-          if (errCode === 'ENOMULTI') { view.moveToNextStep(); } else {
+          // If the error is "multiple submissions", then we should move to the next step.
+          // Otherwise, the user will be stuck on the current step with no way to continue.
+          if (errCode === 'ENOMULTI') { this.moveToNextStep(); } else {
             // If there is an error message, display it
-            if (errMsg) { baseView.toggleActionError('submit', errMsg); }
+            if (errMsg) { this.baseView.toggleActionError('submit', errMsg); }
 
             // Re-enable the submit button so the user can retry
-            view.submitEnabled(true);
+            this.submitEnabled(true);
           }
         });
     }
@@ -545,25 +546,6 @@ export class ResponseView {
       // Disable the "unsaved changes" warning if the user
       // tries to navigate to another page.
       baseView.unsavedWarningEnabled(false, this.UNSAVED_WARNING_KEY);
-    }
-
-    /**
-     Make the user confirm before submitting a response.
-
-     Returns:
-     JQuery deferred object, which is:
-     * resolved if the user confirms the submission
-     * rejected if the user cancels the submission
-     * */
-    confirmSubmission() {
-      // Keep this on one big line to avoid gettext bug: http://stackoverflow.com/a/24579117
-      // eslint-disable-next-line max-len
-      const msg = gettext('You\'re about to submit your response for this assignment. After you submit this response, you can\'t change it or submit a new response.');
-      // TODO -- UI for confirmation dialog instead of JS confirm
-      // eslint-disable-next-line new-cap
-      return $.Deferred((defer) => {
-        if (window.confirm(msg)) { defer.resolve(); } else { defer.reject(); }
-      });
     }
 
     /**
@@ -616,7 +598,7 @@ export class ResponseView {
       }
 
       if (this.getSavedFileCount(false) + files.length > this.data.MAXIMUM_FILE_UPLOAD_COUNT) {
-        const msg = gettext(`Only ${this.data.MAXIMUM_FILE_UPLOAD_COUNT} files can be saved.`);
+        const msg = gettext('The maximum number files that can be saved is ') + this.data.MAXIMUM_FILE_UPLOAD_COUNT;
         this.baseView.toggleActionError(
           'upload',
           gettext(msg),
@@ -788,29 +770,41 @@ export class ResponseView {
    }
 
    /**
-     Remove a previously uploaded file.
+    * Handler for file delete button
+    */
+   handleDeleteFileClick(target) {
+     const view = this;
+     const filenum = $(target).attr('filenum');
+     this.confirmationDialog.confirm(
+       gettext('Confirm Delete Uploaded File'),
+       this.getConfirmRemoveUploadedFileMessage(filenum),
+       () => view.removeUploadedFile(filenum),
+       () => {},
+     );
+   }
 
+   /**
+     Remove a previously uploaded file.
      */
    removeUploadedFile(filenum) {
-     const view = this;
-     return view.confirmRemoveUploadedFile(filenum).done(() => view.server.removeUploadedFile(filenum).done(() => {
-       const sel = $('.step--response', view.element);
+     this.server.removeUploadedFile(filenum).done(() => {
+       const sel = $('.step--response', this.element);
        const block = sel.find(`.submission__answer__file__block__${filenum}`);
        block.html('');
        block.prop('deleted', true);
-       view.checkSubmissionAbility();
+       this.checkSubmissionAbility();
      }).fail((errMsg) => {
-       view.baseView.toggleActionError('delete', errMsg);
-     }));
+       this.baseView.toggleActionError('delete', errMsg);
+     });
    }
 
-   confirmRemoveUploadedFile(filenum) {
+   /**
+   * Build the confirm delete message for a file
+   */
+   getConfirmRemoveUploadedFileMessage(filenum) {
      let msg = gettext('Are you sure you want to delete the following file? It cannot be restored.\nFile: ');
      msg += this.getFileNameAndDescription(filenum);
-     // eslint-disable-next-line new-cap
-     return $.Deferred((defer) => {
-       if (window.confirm(msg)) { defer.resolve(); } else { defer.reject(); }
-     });
+     return msg;
    }
 
    /**
@@ -896,15 +890,18 @@ export class ResponseView {
      // completed, execute a sequential AJAX call to upload to the returned
      // URL. This request requires appropriate CORS configuration for AJAX
      // PUT requests on the server.
-     return view.server.getUploadUrl(filetype, filename, filenum, file).done(
-       () => {
-         view.fileUrl(filenum);
-         view.baseView.toggleActionError('upload', null);
-         if (finalUpload) {
-           sel.find('input[type=file]').val('');
-           view.filesUploaded = true;
-           view.checkSubmissionAbility(true);
-         }
+     return view.server.getUploadUrl(filetype, filename, filenum).done(
+       (url) => {
+         view.fileUploader.upload(url, file)
+           .done(() => {
+             view.fileUrl(filenum);
+             view.baseView.toggleActionError('upload', null);
+             if (finalUpload) {
+               sel.find('input[type=file]').val('');
+               view.filesUploaded = true;
+               view.checkSubmissionAbility(true);
+             }
+           }).fail(handleError);
        },
      ).fail(handleError);
    }
@@ -966,7 +963,10 @@ export class ResponseView {
        button.text('Delete File');
        button.addClass('delete__uploaded__file');
        button.attr('filenum', filenum);
-       button.click(view.handleDeleteFileClick());
+       button.click((eventObject) => {
+         eventObject.preventDefault();
+         view.handleDeleteFileClick(eventObject.target);
+       });
        button.appendTo(fileBlock);
 
        return url;
