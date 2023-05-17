@@ -1,6 +1,6 @@
 from .django_storage import Backend
 
-class Backend(Backend):
+class AzureBackend(Backend):
     """
     Custom backend class that inherits from the Django file upload backend and provides Azure storage functionality.
     """
