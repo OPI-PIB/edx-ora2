@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import HttpResponse
 from django.views.decorators.http import require_http_methods
 
-from .backends.azure import Backend
+from .backends.azure import AzureBackend
 
 
 @login_required()
@@ -16,5 +16,5 @@ def azure_storage(request, key):
     """
     Upload files using azure storage backend.
     """
-    Backend().upload_file(key, request.body)
+    AzureBackend().upload_file(key, request.body)
     return HttpResponse()

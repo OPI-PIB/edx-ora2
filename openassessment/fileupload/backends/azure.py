@@ -31,8 +31,8 @@ class AzureBackend(Backend):
         Upload the given file content to the cloud.
         Return public direct url to file
         """
-        filename = super().upload_file(key, content)
-        return self.get_download_url(filename)
+        super().upload_file(key, content)
+        return self.get_download_url(key)
 
     def _get_file_name_fs(self, key):
         """
